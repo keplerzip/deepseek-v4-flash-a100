@@ -158,4 +158,4 @@ done
 if ((rc_hits > 0)); then
   printf '\nThe shell startup files above were not modified. Remove only the listed old variables manually.\n'
 fi
-printf 'Run the unset command from CODEX-CLI-GUIDE.md in the current shell.\n'
+printf 'Run the unset command from docs/CODEX-CLI.md in the current shell.\n'

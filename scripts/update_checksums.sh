@@ -8,7 +8,7 @@ mkdir -p "$ROOT_DIR/checksums"
 
 cd "$ROOT_DIR"
 find \
-  README.md CODEX-CLI-GUIDE.md CHANGELOG.md BLOCKERS.md VERSION UPDATE-MANIFEST.txt \
+  README.md CHANGELOG.md LICENSE THIRD_PARTY.md VERSION \
   start-production.sh stop-production.sh docs config common target-only dspark scripts benchmarks reports \
   -type f \
   ! -path 'common/image/*.tar' \

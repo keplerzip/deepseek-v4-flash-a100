@@ -1,11 +1,10 @@
 README.md
 LICENSE
 THIRD_PARTY.md
-CODEX-CLI-GUIDE.md
 CHANGELOG.md
-BLOCKERS.md
 VERSION
-UPDATE-MANIFEST.txt
+common/README.md
+common/manifests/source-update-files.txt
 start-production.sh
 stop-production.sh
 docs
@@ -15,6 +14,7 @@ target-only
 dspark
 benchmarks/README.md
 reports/compatibility-report.md
+reports/README.md
 reports/deepseek-v4-flash-a100-performance-summary-2026-08-13.png
 reports/field-test-record-2026-08-13.md
 reports/performance-report-2026-08-13.artifact.json
@@ -24,4 +24,3 @@ reports/performance-source-notes-2026-08-13.md
 reports/data
 reports/queries
 reports/qa
-checksums/README.md

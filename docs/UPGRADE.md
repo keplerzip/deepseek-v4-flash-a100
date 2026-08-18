@@ -26,12 +26,12 @@ tar -tzf deepseek-v4-flash-a100-project-update-1.2.0-f8ea5bb-a100-field.tar.gz
 ```bash
 cd /ai/services/deepseek-v4-flash-a100/deploy
 
-BACKUP=/ai/services/deepseek-v4-flash-a100/deploy-before-1.2.0-$(date -u +%Y%m%dT%H%M%SZ).tar.gz
+BACKUP=/ai/services/deepseek-v4-flash-a100/deploy-before-1.4.0-$(date -u +%Y%m%dT%H%M%SZ).tar.gz
 
 tar --exclude='scripts/__pycache__' -czf "$BACKUP" \
-  README.md CODEX-CLI-GUIDE.md BLOCKERS.md VERSION \
+  README.md CHANGELOG.md LICENSE THIRD_PARTY.md VERSION \
   start-production.sh stop-production.sh \
-  docs config scripts target-only dspark \
+  docs config common/manifests common/licenses scripts target-only dspark \
   benchmarks/README.md reports checksums 2>/dev/null || true
 
 echo "BACKUP=$BACKUP"

@@ -82,6 +82,9 @@ CUDA illegal memory access；最终 target-only 256K/C16/4096 配置尚未完成
 512K/4096 启动日志折算的 256K KV 驻留容量约为 19.58 路；16 路留有约 18% 的
 KV 容量余量，但最终组合仍应完成持续并发验收。
 
+参数来源、覆盖顺序和选择依据集中记录在
+[最终定型方案](docs/FINAL-CONFIGURATION.md)。
+
 ## 一键启动
 
 第一次使用先完成离线导入和预检：
@@ -129,13 +132,15 @@ source ./start-production.sh
 在约 7 个 token 后结束，而相同后端通过 Codex 工作正常，因此该现象记录为网关/协议
 兼容性问题，不归因于 TP、KV cache 或模型上下文。
 
-**[打开 Codex CLI 一键接入与 Claude 配置清理指南](CODEX-CLI-GUIDE.md)**
+**[打开 Codex CLI 一键接入与 Claude 配置清理指南](docs/CODEX-CLI.md)**
 
 清理脚本只移动 Claude 活动配置和凭据，完整保留 `~/.claude/projects/`、
 `~/.claude/history.jsonl` 等历史，并支持恢复。
 
 ## 文档导航
 
+- [文档中心](docs/README.md)
+- [最终定型方案](docs/FINAL-CONFIGURATION.md)
 - [完整离线部署](docs/DEPLOYMENT.md)
 - [项目结构与源码/大文件边界](docs/PROJECT-STRUCTURE.md)
 - [从旧运行包升级本项目](docs/UPGRADE.md)
@@ -147,7 +152,7 @@ source ./start-production.sh
 - [2026-08-13 A100 性能报告](reports/performance-report-2026-08-13.md)
 - [可离线打开的性能报告](reports/performance-report-2026-08-13.html)
 - [现场测试数据与证据等级](reports/data/README.md)
-- [未解决项](BLOCKERS.md)
+- [已知限制与未完成验收](docs/KNOWN-LIMITATIONS.md)
 - [变更记录](CHANGELOG.md)
 
 ## 两个互斥模式

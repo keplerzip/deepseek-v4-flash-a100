@@ -9,7 +9,6 @@ deepseek-v4-flash-a100/
 ├── LICENSE                       # 本项目原创脚本/文档的 Apache-2.0
 ├── THIRD_PARTY.md                # 上游仓库、固定 commit 与许可证致谢
 ├── VERSION / CHANGELOG.md        # 项目版本和变更记录
-├── BLOCKERS.md                   # 尚未完成的验收与已知风险
 ├── start-production.sh           # 固化 target-only 生产启动入口
 ├── stop-production.sh            # 精确停止本项目生产容器
 ├── config/
@@ -39,8 +38,11 @@ deepseek-v4-flash-a100/
 │   ├── performance-report-*.md   # 脱敏后的现场性能报告
 │   ├── data/                     # 报告使用的结构化摘录
 │   └── queries/                  # 报告指标查询
-├── docs/                         # 部署、运维、测试、排障和架构文档
-└── checksums/README.md            # 完整离线包 checksum 的生成说明
+└── docs/
+    ├── README.md                 # 文档导航
+    ├── FINAL-CONFIGURATION.md    # 最终定型参数与配置优先级
+    ├── KNOWN-LIMITATIONS.md      # 尚未完成的验收与已知风险
+    └── CHECKSUMS.md              # 完整离线包 checksum 生成说明
 ```
 
 ## 不进入公开 Git 的目录
@@ -61,8 +63,8 @@ run/                              # PID、锁与运行状态
 ```
 
 本机模型路径写入 `config/model.env`，该文件不会进入 Git；公开仓库只提供
-`config/model.env.example`。完整离线包生成后，`checksums/SHA256SUMS` 也在包内生成，
-而不是提交一个引用缺失大文件的 checksum 清单。
+`config/model.env.example`。完整离线包生成后，`checksums/SHA256SUMS` 在包内生成，
+生成方法记录在 `docs/CHECKSUMS.md`，不会提交一个引用缺失大文件的 checksum 清单。
 
 ## 代码边界
 

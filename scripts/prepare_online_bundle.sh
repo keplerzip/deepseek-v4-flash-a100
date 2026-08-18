@@ -62,7 +62,7 @@ if ((build_rc != 0)); then
     printf '\n## Image build blocker (%s)\n\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     printf 'The exact commit image build failed (exit %d). See `reports/image-build.log`.\n' "$build_rc"
     printf 'No alternate vLLM, commit, CUDA or Torch version was substituted.\n'
-  } >>"$ROOT_DIR/BLOCKERS.md"
+  } >>"$ROOT_DIR/docs/KNOWN-LIMITATIONS.md"
   exit "$build_rc"
 fi
 

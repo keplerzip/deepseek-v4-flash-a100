@@ -88,7 +88,7 @@ if ((build_rc != 0)); then
     printf '\n## Target offline compile blocker (%s)\n\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     printf 'The network-isolated target compile failed (exit %d). See `reports/target-offline-build.log`.\n' "$build_rc"
     printf 'The owned compiler container `%s` was preserved for inspection. No alternate commit or dependency was substituted.\n' "$BUILD_CONTAINER"
-  } >>"$ROOT_DIR/BLOCKERS.md"
+  } >>"$ROOT_DIR/docs/KNOWN-LIMITATIONS.md"
   exit "$build_rc"
 fi
 

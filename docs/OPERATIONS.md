@@ -95,7 +95,7 @@ New API 上游地址通常为：
 http://host.docker.internal:8005/v1
 ```
 
-推荐客户端为 Codex CLI，详见 [Codex 指南](../CODEX-CLI-GUIDE.md)。Codex 通过
+推荐客户端为 Codex CLI，详见 [Codex 指南](CODEX-CLI.md)。Codex 通过
 Responses 链路已完成真实长任务；Claude Code 经协议转换的 7-token 中断不能用增加 KV
 或上下文解决。
 

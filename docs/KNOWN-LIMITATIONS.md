@@ -1,4 +1,7 @@
-# 未解决项与验证边界
+# 已知限制与验证边界
+
+当前固化参数与配置优先级见 [最终定型方案](FINAL-CONFIGURATION.md)。本页只记录仍未闭环
+的验收、实验模式事故和证据边界。
 
 截至 2026-08-16，固定 runtime 已在目标 A100 机器运行，模型完整性、target-only 必需
 smoke、CUDA Graph、300K 单路、C12 短请求、DSpark 加载与 acceptance 均已有现场证据。

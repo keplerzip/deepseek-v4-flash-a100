@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0-f8ea5bb-structure — 2026-08-18
+
+- 清理根目录，将 Codex 指南、已知限制、checksum 说明和源码更新清单归入职责目录；
+- 新增统一文档中心和独立的最终定型方案页；
+- 为 `config/`、`common/`、`scripts/`、两个运行模式和 `reports/` 增加目录索引；
+- 保留所有已验证的生产入口与模式脚本路径，避免目录优化破坏目标机命令；
+- 更新构建失败记录、checksum、升级备份和文档的全部新路径。
+
 ## 1.3.0-f8ea5bb-public — 2026-08-18
 
 - 以 `deepseek-v4-flash-a100` 名称整理 source-only 公开仓库；

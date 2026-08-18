@@ -81,7 +81,7 @@ if ((download_rc != 0)); then
     printf '\n## Wheelhouse build blocker (%s)\n\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     printf 'Binary-only dependency download failed. See `reports/wheelhouse-download.log`. '
     printf 'The container artifact is unaffected; native fallback is not accepted as complete.\n'
-  } >>"$ROOT_DIR/BLOCKERS.md"
+  } >>"$ROOT_DIR/docs/KNOWN-LIMITATIONS.md"
   exit 4
 fi
 

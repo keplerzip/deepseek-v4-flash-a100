@@ -6,8 +6,8 @@
 Codex CLI -> New API 的 OpenAI/Responses 接口 -> DeepSeek-V4-Flash-0731
 ```
 
-服务端生产配置和启动命令见 [README](README.md) 与
-[生产运行文档](docs/OPERATIONS.md)。当前统一模型名为
+服务端生产配置和启动命令见 [README](../README.md) 与
+[生产运行文档](OPERATIONS.md)。当前统一模型名为
 `deepseek-v4-flash-0731-target`，服务端最大上下文为 256K。
 
 目标机现场验证表明，这条链路能够正常完成多轮工具调用，并能使用本服务配置的
