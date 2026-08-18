@@ -1,0 +1,33 @@
+# Changelog
+
+## 1.3.0-f8ea5bb-public — 2026-08-18
+
+- 以 `deepseek-v4-flash-a100` 名称整理 source-only 公开仓库；
+- README 首页直接披露 A100 target-only、DSpark、长上下文和 batched-token 调优实测；
+- 新增项目结构说明，明确源码、运行时目录和离线大文件边界；
+- 新增 Apache-2.0 根许可证和完整第三方开源项目致谢；
+- 排除模型、镜像、wheels、编译缓存、vendored checkout、机器配置和原始日志；
+- 对公开 Git 跟踪集执行敏感词、账号、内网身份、私钥与 Token 扫描。
+
+## 1.2.0-f8ea5bb-a100-field — 2026-08-16
+
+- 将 target-only 设为生产推荐模式；
+- 新增 `source ./start-production.sh` 单入口；
+- 固化 256K、`max_num_seqs=16`、`max_num_batched_tokens=4096`、0.92、CUDA Graph；
+- 256K DSpark 改为并发 6、默认显存比例 0.80，并明确标记实验性；
+- 为 `max_num_batched_tokens` 和 `kv_cache_memory_bytes` 增加一等配置项，避免把 CLI
+  参数直接写入可 source 的 env 文件；
+- GPU guard 增加精确容器 allowlist，允许 DCGM exporter，但继续阻止真实计算进程；
+- 保留 Docker 29 的 `--gpus all` 兼容修复；
+- 新增完整部署、运维、测试、架构、故障排查和性能报告；
+- 保存 2026-08-13 A100 现场 benchmark、GPU 与 DSpark acceptance 结构化摘录；
+- 将 Codex CLI + Responses 提升为优先客户端，记录 Claude/New API 转换中断问题；
+- 版本从 `1.1.0-f8ea5bb-runtime` 更新为 `1.2.0-f8ea5bb-a100-field`。
+
+## 1.1.0-f8ea5bb-runtime — 2026-08-13
+
+- 在无 GPU、32GiB 构建机上用 8 jobs 完成固定 commit 的 SM80 编译；
+- 生成可离线导入的公共 runtime image；
+- 添加 target-only 与 DSpark 双模式、GPU guard、smoke、benchmark、stability 和回滚脚本；
+- 添加 ModelScope 权重 metadata 与 DSpark 权重检查；
+- 完成 Ubuntu 22.04 / CUDA 13 / Driver 兼容性审计。

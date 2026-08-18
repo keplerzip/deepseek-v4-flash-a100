@@ -1,0 +1,11 @@
+commit=f8ea5bb163c161ef38b401d055cc5fd4a934091a
+torch_cuda_arch_list=8.0
+max_jobs=8
+nvcc_threads=1
+network=none
+local_resume=true
+compile=PASS
+wheel_install=PASS
+sm80_cubins=PASS
+cli_parser=PASS
+gpu_runtime_test=DEFERRED_TO_A100_TARGET

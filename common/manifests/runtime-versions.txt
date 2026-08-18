@@ -1,0 +1,8 @@
+INFO 08-13 12:20:20 [importing.py:53] Triton is installed but 0 active driver(s) found (expected 1). Disabling Triton to prevent runtime errors.
+INFO 08-13 12:20:20 [importing.py:88] Triton not installed or not compatible; certain GPU-related functions will not be available.
+vllm=0.1.dev1+gf8ea5bb16
+torch=2.13.0+cu130
+torch_cuda=13.0
+triton=3.7.1
+dspark_source_support=True
+gpu_runtime_test=DEFERRED_TO_A100_TARGET

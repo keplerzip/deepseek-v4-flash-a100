@@ -1,0 +1,17 @@
+[Unit]
+Description=DeepSeek V4 Flash target-only vLLM
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/absolute/path/to/deepseek-v4-flash-a100-offline
+# The production wrapper pins 256K/C16/4096/0.92/Graph before starting.
+ExecStart=/usr/bin/bash -lc 'source ./start-production.sh'
+ExecStop=/absolute/path/to/deepseek-v4-flash-a100-offline/stop-production.sh
+TimeoutStartSec=7500
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target

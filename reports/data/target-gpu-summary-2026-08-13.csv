@@ -1,0 +1,9 @@
+gpu,active_samples,util_avg_percent,util_p95_percent,power_avg_w,power_p95_w,power_max_w,memory_peak_mib,evidence_grade,source_artifact
+0,59,74.2,97.0,164.4,168.4,306.1,77213,B,gpu-target-only-20260813T173354Z.csv
+1,60,96.4,99.0,168.5,170.5,307.0,77219,B,gpu-target-only-20260813T173354Z.csv
+2,59,97.8,98.0,168.8,167.7,300.7,77213,B,gpu-target-only-20260813T173354Z.csv
+3,60,96.3,99.0,168.2,170.7,302.8,77219,B,gpu-target-only-20260813T173354Z.csv
+4,59,98.4,99.0,166.3,169.1,308.5,77219,B,gpu-target-only-20260813T173354Z.csv
+5,60,97.1,99.0,165.5,168.4,302.8,77221,B,gpu-target-only-20260813T173354Z.csv
+6,60,97.0,99.0,169.5,170.7,311.4,77213,B,gpu-target-only-20260813T173354Z.csv
+7,59,98.2,99.0,165.0,165.6,301.3,77211,B,gpu-target-only-20260813T173354Z.csv

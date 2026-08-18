@@ -1,0 +1,22 @@
+record_id,run_utc,mode,execution_mode,max_model_len,max_num_seqs,gpu_memory_utilization,max_num_batched_tokens,kv_cache_memory_bytes,prompt_tokens,output_tokens,concurrency,successful_requests,total_requests,ttft_p50_s,ttft_p95_s,decode_tps_mean,aggregate_tps,prompt_tps_proxy,e2e_p50_s,kv_max_concurrency,error,evidence_grade,source_artifact
+TGT-EAGER-001,2026-08-13T15:30:55Z,target-only,eager,32768,,,,,1024,512,1,1,1,0.1566580543,,7.8903724694,,,,,,B,benchmark-target-only-20260813T153055Z.json
+TGT-EAGER-002,2026-08-13T15:30:55Z,target-only,eager,32768,,,,,11000,512,1,1,1,1.3379516546,,7.2892546749,,,,,,B,benchmark-target-only-20260813T153055Z.json
+DSP-GRAPH-001,2026-08-13T15:55:55Z,dspark,graph,262144,4,0.95,,,1024,512,1,1,1,0.1579344971,,341.4170341539,,,,,,B,benchmark-dspark-20260813T155555Z.json
+DSP-GRAPH-002,2026-08-13T15:55:55Z,dspark,graph,262144,4,0.95,,,11000,512,1,1,1,1.3444004990,,301.3308396215,,,,,,B,benchmark-dspark-20260813T155555Z.json
+DSP-GRAPH-003,2026-08-13T15:55:55Z,dspark,graph,262144,4,0.95,,,131072,512,1,1,1,25.0283198068,,218.8443225500,,,,,,B,benchmark-dspark-20260813T155555Z.json
+DSP-GRAPH-004,2026-08-13T15:55:55Z,dspark,graph,262144,4,0.95,,,260000,512,1,0,1,,,,,,,,CUDA OOM followed by API shutdown,B,benchmark-dspark-20260813T155555Z.json
+DSP-GRAPH-005,2026-08-13T16:52:42Z,dspark,graph,262144,6,,,17179869184,260000,128,2,2,2,60.4326277133,,105.7981588263,,,,,,B,benchmark-dspark-20260813T165242Z.json
+DSP-GRAPH-006,2026-08-13T16:54:52Z,dspark,graph,262144,6,,,17179869184,260000,128,3,1,3,61.2693251194,,20.1941212762,,,,,,CUDA illegal memory access; engine terminated,B,benchmark-dspark-20260813T165452Z.json
+DSP-EAGER-001,2026-08-13T17:05:19Z,dspark,eager,262144,6,0.80,,,260000,128,3,3,3,119.7532878118,,27.3231851892,,,,,,B,benchmark-dspark-20260813T170519Z.json
+TGT-GRAPH-001,2026-08-13T17:33:54Z,target-only,graph,307200,12,0.92,,,1024,1024,12,12,12,0.7791148955,1.3024118561,36.5510008448,425.3376574729,1048.8826126300,28.8402900808,18.47,,B,benchmark-target-only-20260813T173354Z.json
+TGT-GRAPH-002,2026-08-13T17:38:18Z,target-only,graph,307200,12,0.92,,,300000,128,1,1,1,73.1475624340,,30.7540095323,,,,18.47,,B,benchmark-target-only-20260813T173818Z.json
+DSP-GRAPH-007,2026-08-13T17:49:33Z,dspark,graph,262144,6,0.80,,,260000,128,6,6,6,180.4758001957,,48.8916748123,,,,,,B,benchmark-dspark-20260813T174933Z.json
+MNB-2048-C1,2026-08-13T18:15:10Z,target-only,graph,524288,10,0.92,2048,,65536,32,1,1,1,9.1394595709,,56.0281822560,,,,14.21,,B,dsv4-tune-mnbt-all.log
+MNB-2048-C4,2026-08-13T18:15:10Z,target-only,graph,524288,10,0.92,2048,,65536,32,4,4,4,18.9323970182,,16.8643485482,,,,14.21,,B,dsv4-tune-mnbt-all.log
+MNB-2048-C10,2026-08-13T18:15:10Z,target-only,graph,524288,10,0.92,2048,,65536,32,10,10,10,50.4616595785,,8.7581171549,,,,14.21,,B,dsv4-tune-mnbt-all.log
+MNB-4096-C1,2026-08-13T18:21:25Z,target-only,graph,524288,10,0.92,4096,,65536,32,1,1,1,8.3055768646,,56.1285205183,,,,9.79,,B,dsv4-tune-mnbt-all.log
+MNB-4096-C4,2026-08-13T18:21:25Z,target-only,graph,524288,10,0.92,4096,,65536,32,4,4,4,16.8877389152,,14.3152836633,,,,9.79,,B,dsv4-tune-mnbt-all.log
+MNB-4096-C10,2026-08-13T18:21:25Z,target-only,graph,524288,10,0.92,4096,,65536,32,10,10,10,41.4841257613,,7.3619789775,,,,9.79,,B,dsv4-tune-mnbt-all.log
+MNB-8192-C1,2026-08-13T18:27:25Z,target-only,graph,524288,10,0.92,8192,,65536,32,1,1,1,7.7221944593,,55.9848131280,,,,5.93,,B,dsv4-tune-mnbt-all.log
+MNB-8192-C4,2026-08-13T18:27:25Z,target-only,graph,524288,10,0.92,8192,,65536,32,4,4,4,15.9963459531,,13.9316080768,,,,5.93,,B,dsv4-tune-mnbt-all.log
+MNB-8192-C10,2026-08-13T18:27:25Z,target-only,graph,524288,10,0.92,8192,,65536,32,10,10,10,38.5664838441,,6.5076314283,,,,5.93,,B,dsv4-tune-mnbt-all.log

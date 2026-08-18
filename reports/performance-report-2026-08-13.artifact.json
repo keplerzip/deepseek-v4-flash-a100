@@ -1,0 +1,268 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "DeepSeek V4 Flash 0731：8×A100 现场性能报告",
+    "description": "2026-08-13 Ubuntu 22.04 / 8×A100 target-only 与 DSpark 现场测试。",
+    "generatedAt": "2026-08-15T16:00:00Z",
+    "cards": [
+      {
+        "id": "target_ttft",
+        "description": "307,200 max context、1K/1K、C12 的客户端 TTFT P50。",
+        "dataset": "headline_target",
+        "sourceId": "headline_target_sql",
+        "metrics": [
+          {"label": "Target C12 TTFT P50", "field": "ttft_p50_s", "format": "number", "unit": "s"}
+        ]
+      },
+      {
+        "id": "target_aggregate",
+        "description": "同一 C12 并发组总 completion token 除以整组 wall span。",
+        "dataset": "headline_target",
+        "sourceId": "headline_target_sql",
+        "metrics": [
+          {"label": "Target C12 aggregate", "field": "aggregate_tps", "format": "number", "unit": "tok/s"}
+        ]
+      },
+      {
+        "id": "target_success",
+        "description": "同一 C12 短请求矩阵成功率；样本数 12。",
+        "dataset": "headline_target",
+        "sourceId": "headline_target_sql",
+        "metrics": [
+          {"label": "Target C12 success", "field": "success_rate", "format": "percent"}
+        ]
+      },
+      {
+        "id": "target_decode",
+        "description": "同一 C12 运行中成功请求的单请求 decode TPS 算术平均。",
+        "dataset": "headline_target",
+        "sourceId": "headline_target_sql",
+        "metrics": [
+          {"label": "Per-request decode mean", "field": "decode_tps_mean", "format": "number", "unit": "tok/s"}
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "mnb_ttft_chart",
+        "title": "65,536-token prompt TTFT by scheduler limit",
+        "subtitle": "512K max context、output 32、CUDA Graph；每组重复一次。",
+        "type": "bar",
+        "dataset": "mnb_tuning",
+        "sourceId": "mnb_tuning_sql",
+        "valueFormat": "number",
+        "encodings": {
+          "x": {"field": "concurrency", "type": "ordinal", "label": "Concurrency"},
+          "y": {"field": "ttft_p50_s", "type": "quantitative", "label": "TTFT P50", "unit": "s"},
+          "color": {"field": "batched_label", "type": "nominal", "label": "Max batched tokens"},
+          "tooltip": [
+            {"field": "decode_tps_mean", "type": "quantitative", "label": "Per-request decode", "unit": "tok/s"},
+            {"field": "kv_max_concurrency", "type": "quantitative", "label": "512K KV capacity"}
+          ]
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "target_results_table",
+        "title": "Target-only CUDA Graph results",
+        "subtitle": "短并发与 300K 单路是不同 workload，不能互相外推。",
+        "dataset": "target_results",
+        "sourceId": "target_results_sql",
+        "defaultSort": {"field": "run", "direction": "asc"},
+        "columns": [
+          {"field": "run", "label": "Run", "type": "text"},
+          {"field": "workload", "label": "Prompt / output", "type": "text"},
+          {"field": "concurrency", "label": "C", "format": "number"},
+          {"field": "success", "label": "Success", "type": "text"},
+          {"field": "ttft_p50_s", "label": "TTFT P50", "format": "number", "unit": "s"},
+          {"field": "decode_tps_mean", "label": "Decode mean", "format": "number", "unit": "tok/s"}
+        ]
+      },
+      {
+        "id": "gpu_summary_table",
+        "title": "Target-only C12 GPU active-sample summary",
+        "subtitle": "显存峰值对称；GPU0 平均利用率低于 GPU1–7。",
+        "dataset": "gpu_summary",
+        "sourceId": "gpu_summary_sql",
+        "defaultSort": {"field": "gpu", "direction": "asc"},
+        "columns": [
+          {"field": "gpu", "label": "GPU", "format": "number"},
+          {"field": "util_avg_percent", "label": "Util avg", "format": "number", "unit": "%"},
+          {"field": "util_p95_percent", "label": "Util P95", "format": "number", "unit": "%"},
+          {"field": "power_avg_w", "label": "Power avg", "format": "number", "unit": "W"},
+          {"field": "memory_peak_mib", "label": "Memory peak", "format": "number", "unit": "MiB"}
+        ]
+      },
+      {
+        "id": "mnb_tuning_table",
+        "title": "Scheduler tuning detail",
+        "subtitle": "Exact TTFT, per-request decode and startup KV capacity for each group。",
+        "dataset": "mnb_tuning",
+        "sourceId": "mnb_tuning_sql",
+        "defaultSort": {"field": "max_num_batched_tokens", "direction": "asc"},
+        "columns": [
+          {"field": "max_num_batched_tokens", "label": "Batched tokens", "format": "number"},
+          {"field": "concurrency", "label": "C", "format": "number"},
+          {"field": "ttft_p50_s", "label": "TTFT P50", "format": "number", "unit": "s"},
+          {"field": "decode_tps_mean", "label": "Decode mean", "format": "number", "unit": "tok/s"},
+          {"field": "kv_max_concurrency", "label": "512K KV capacity", "format": "number", "unit": "x"}
+        ]
+      },
+      {
+        "id": "dspark_results_table",
+        "title": "DSpark field-test results",
+        "subtitle": "配置随测试阶段变化；结果不能合并成单一 speedup。",
+        "dataset": "dspark_results",
+        "sourceId": "dspark_results_sql",
+        "defaultSort": {"field": "run", "direction": "asc"},
+        "columns": [
+          {"field": "run", "label": "Run", "type": "text"},
+          {"field": "workload", "label": "Prompt / output", "type": "text"},
+          {"field": "concurrency", "label": "C", "format": "number"},
+          {"field": "success", "label": "Success", "type": "text"},
+          {"field": "ttft_p50_s", "label": "TTFT P50", "format": "number", "unit": "s"},
+          {"field": "decode_tps_mean", "label": "Decode mean", "format": "number", "unit": "tok/s"},
+          {"field": "error", "label": "Failure", "type": "text"}
+        ]
+      },
+      {
+        "id": "acceptance_table",
+        "title": "DSpark acceptance log snapshots",
+        "subtitle": "五个顺序日志窗口，缺少独立 workload 标签。",
+        "dataset": "dspark_acceptance",
+        "sourceId": "dspark_acceptance_sql",
+        "defaultSort": {"field": "snapshot", "direction": "asc"},
+        "columns": [
+          {"field": "snapshot", "label": "Snapshot", "format": "number"},
+          {"field": "mean_acceptance_length", "label": "Mean length", "format": "number"},
+          {"field": "accepted_tokens", "label": "Accepted", "format": "number"},
+          {"field": "drafted_tokens", "label": "Drafted", "format": "number"},
+          {"field": "average_draft_acceptance_rate", "label": "Acceptance", "format": "percent"}
+        ]
+      }
+    ],
+    "sources": [
+      {"id": "headline_target_sql", "label": "Target headline query", "path": "reports/queries/headline-target.sql"},
+      {"id": "target_results_sql", "label": "Target result query", "path": "reports/queries/target-results.sql"},
+      {"id": "gpu_summary_sql", "label": "GPU summary query", "path": "reports/queries/gpu-summary.sql"},
+      {"id": "mnb_tuning_sql", "label": "Scheduler tuning query", "path": "reports/queries/mnb-tuning.sql"},
+      {"id": "dspark_results_sql", "label": "DSpark result query", "path": "reports/queries/dspark-results.sql"},
+      {"id": "dspark_acceptance_sql", "label": "DSpark acceptance query", "path": "reports/queries/dspark-acceptance.sql"}
+    ],
+    "blocks": [
+      {"id": "title", "type": "markdown", "body": "# DeepSeek V4 Flash 0731：8×A100 现场性能报告"},
+      {"id": "technical_summary", "type": "markdown", "body": "## 技术摘要\n\n**当前生产建议是 target-only 256K/C16/4096/0.92/CUDA Graph。** 已测 307,200 max context、1K/1K、C12 为 12/12 成功，TTFT P50 0.779 秒、aggregate 425.34 tok/s；单路 300K/128 也完成。**DSpark 已真实启用且单路 decode 很快，但 0.95 发生 OOM，另一长上下文 Graph 组合发生 illegal memory access，因此仍是实验模式。** 当前数值来自带文件名的终端摘录，原始 JSON/CSV 尚未回传，证据等级 B。"},
+      {"id": "headline_metrics", "type": "metric-strip", "cardIds": ["target_ttft", "target_aggregate", "target_success", "target_decode"]},
+      {"id": "target_finding", "type": "markdown", "sourceId": "target_results_sql", "body": "## Target-only 已证明短并发和 300K 单路可用\n\nC12 短请求与 300K 单路都成功，但它们是不同 workload。启动日志给出 5,674,802 个 KV tokens 和 307,200 上下文下 18.47x maximum concurrency；不能把 KV 驻留容量解释为 16 路长 prompt 可同时快速 prefill。"},
+      {"id": "target_table_block", "type": "table", "tableId": "target_results_table"},
+      {"id": "gpu_finding", "type": "markdown", "sourceId": "gpu_summary_sql", "body": "## 八张 GPU 显存分片对称，GPU0 平均利用率需要复核\n\n各卡显存峰值只有 10MiB 的跨度。GPU1–7 平均利用率约 97.3%，GPU0 为 74.2%；一次短运行不足以判断这是 rank0 调度特征还是监控/NUMA 问题。"},
+      {"id": "gpu_table_block", "type": "table", "tableId": "gpu_summary_table"},
+      {"id": "mnb_finding", "type": "markdown", "sourceId": "mnb_tuning_sql", "body": "## 4096 是 TTFT 与 KV 容量之间的中间点\n\n在 512K、65,536-token prompt 下，4096 相对 2048 将 TTFT 降低约 9.1%–17.8%，但 KV capacity 从 14.21x 降到 9.79x。8192 继续小幅降低 TTFT，却把容量降到 5.93x，并进一步降低高并发单请求 decode。图中只比较同一调优矩阵。"},
+      {"id": "mnb_chart_block", "type": "chart", "chartId": "mnb_ttft_chart"},
+      {"id": "mnb_table_block", "type": "table", "tableId": "mnb_tuning_table"},
+      {"id": "dspark_finding", "type": "markdown", "sourceId": "dspark_results_sql", "body": "## DSpark decode 亮眼，但显存和 Graph 风险阻止生产启用\n\n1K/11K/128K 单路 decode 分别达到 341.42/301.33/218.84 tok/s；260K/512 在 0.95 下 OOM。手工 16GiB KV 的 Graph C3 随后出现 illegal memory access，而 eager C3 与另一 0.80/C6 Graph 单次矩阵能够完成。配置不同，不能合并成稳定性结论。"},
+      {"id": "dspark_table_block", "type": "table", "tableId": "dspark_results_table"},
+      {"id": "acceptance_finding", "type": "markdown", "sourceId": "dspark_acceptance_sql", "body": "## DSpark acceptance 随负载从 80.0% 降到 25.6%\n\n五个日志窗口的 mean acceptance length 从 5.00 降到 2.28。DSpark 只加速 decode，不减少长 prompt prefill；真实代码代理 workload 的长期 acceptance 分布才是是否启用的依据。"},
+      {"id": "acceptance_table_block", "type": "table", "tableId": "acceptance_table"},
+      {"id": "scope_definitions", "type": "markdown", "body": "## 数据范围与指标口径\n\nTTFT 是客户端发送到第一个非空 SSE 文本 chunk，包含排队、网络和 prefill。`decode_tps_mean` 是成功请求各自 decode TPS 的算术平均；aggregate throughput 是并发组总 completion token 除以整组 wall span，包含 TTFT。历史 MiniMax 11K/15 秒只作参考，因为原 prompt 未找到。"},
+      {"id": "methodology", "type": "markdown", "body": "## 方法与可复现性\n\n`benchmark_api.py` 发起流式请求并计算 client-side 指标，`collect_metrics.py` 采集 GPU，`finalize_benchmark.py` 合并日志诊断。报告的三个 CSV 是操作者终端输出的结构化摘录；SQL 在 QA 时对加载这些 CSV 的内存 SQLite 数据库执行。"},
+      {"id": "limitations", "type": "markdown", "body": "## 局限性、质量风险与稳健性检查\n\n1. 原始结果文件未回传，当前证据等级 B。\n2. 多数矩阵只重复一次，不能估计方差。\n3. 最终 256K/C16/4096 组合尚缺 1 小时和 24 小时 soak。\n4. DSpark 的 0.95、0.80、手工 KV、Graph 和 eager 不能合并。\n5. 没有完全同口径 target/DSpark A/B。\n6. GPU0 平均利用率需要更长采样。"},
+      {"id": "recommendations", "type": "markdown", "body": "## 建议的生产动作\n\n1. 使用固化的 target-only 256K/C16/4096/0.92/Graph。\n2. 先补 C1/2/4/8/16 短矩阵，再逐级测试 256K 长 prompt。\n3. 完成 1 小时和 24 小时稳定性并归档原始 JSON、GPU CSV、launch manifest 与日志。\n4. DSpark 只在维护窗口用 0.80/C6 继续研究，不使用 0.95 或手工 16GiB KV。\n5. 生产客户端优先 Codex + Responses；Claude 转换链路单独排查。"},
+      {"id": "further_questions", "type": "markdown", "body": "## 仍需回答的问题\n\n- 最终组合在 24 小时内是否有显存增长和尾延迟恶化？\n- target-only Graph 同口径单流 decode 是否接近社区 85.5 tok/s 参考？\n- GPU0 的长期利用率是否持续偏低？\n- 真实 Codex workload 的 DSpark acceptance P50/P95 是多少？\n- New API 是否能完整映射 `message.reasoning`？"}
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-08-15T16:00:00Z",
+    "status": "ready",
+    "datasets": {
+      "headline_target": [
+        {"record_id": "TGT-GRAPH-001", "ttft_p50_s": 0.7791148955002427, "aggregate_tps": 425.33765747289374, "success_rate": 1.0, "decode_tps_mean": 36.551000844762704}
+      ],
+      "target_results": [
+        {"record_id": "TGT-GRAPH-001", "run": "short-C12", "workload": "1,024 / 1,024", "max_model_len": 307200, "prompt_tokens": 1024, "output_tokens": 1024, "concurrency": 12, "success": "12/12", "ttft_p50_s": 0.7791148955002427, "ttft_p95_s": 1.3024118561297655, "decode_tps_mean": 36.551000844762704, "aggregate_tps": 425.33765747289374, "e2e_p50_s": 28.84029008075595},
+        {"record_id": "TGT-GRAPH-002", "run": "300K-C1", "workload": "300,000 / 128", "max_model_len": 307200, "prompt_tokens": 300000, "output_tokens": 128, "concurrency": 1, "success": "1/1", "ttft_p50_s": 73.1475624339655, "ttft_p95_s": null, "decode_tps_mean": 30.754009532349286, "aggregate_tps": null, "e2e_p50_s": null}
+      ],
+      "gpu_summary": [
+        {"gpu": 0, "active_samples": 59, "util_avg_percent": 74.2, "util_p95_percent": 97.0, "power_avg_w": 164.4, "power_max_w": 306.1, "memory_peak_mib": 77213},
+        {"gpu": 1, "active_samples": 60, "util_avg_percent": 96.4, "util_p95_percent": 99.0, "power_avg_w": 168.5, "power_max_w": 307.0, "memory_peak_mib": 77219},
+        {"gpu": 2, "active_samples": 59, "util_avg_percent": 97.8, "util_p95_percent": 98.0, "power_avg_w": 168.8, "power_max_w": 300.7, "memory_peak_mib": 77213},
+        {"gpu": 3, "active_samples": 60, "util_avg_percent": 96.3, "util_p95_percent": 99.0, "power_avg_w": 168.2, "power_max_w": 302.8, "memory_peak_mib": 77219},
+        {"gpu": 4, "active_samples": 59, "util_avg_percent": 98.4, "util_p95_percent": 99.0, "power_avg_w": 166.3, "power_max_w": 308.5, "memory_peak_mib": 77219},
+        {"gpu": 5, "active_samples": 60, "util_avg_percent": 97.1, "util_p95_percent": 99.0, "power_avg_w": 165.5, "power_max_w": 302.8, "memory_peak_mib": 77221},
+        {"gpu": 6, "active_samples": 60, "util_avg_percent": 97.0, "util_p95_percent": 99.0, "power_avg_w": 169.5, "power_max_w": 311.4, "memory_peak_mib": 77213},
+        {"gpu": 7, "active_samples": 59, "util_avg_percent": 98.2, "util_p95_percent": 99.0, "power_avg_w": 165.0, "power_max_w": 301.3, "memory_peak_mib": 77211}
+      ],
+      "mnb_tuning": [
+        {"max_num_batched_tokens": 2048, "batched_label": "2048", "concurrency": 1, "ttft_p50_s": 9.139459570869803, "decode_tps_mean": 56.028182256029716, "kv_max_concurrency": 14.21},
+        {"max_num_batched_tokens": 2048, "batched_label": "2048", "concurrency": 4, "ttft_p50_s": 18.932397018186748, "decode_tps_mean": 16.864348548155867, "kv_max_concurrency": 14.21},
+        {"max_num_batched_tokens": 2048, "batched_label": "2048", "concurrency": 10, "ttft_p50_s": 50.461659578513354, "decode_tps_mean": 8.758117154937022, "kv_max_concurrency": 14.21},
+        {"max_num_batched_tokens": 4096, "batched_label": "4096", "concurrency": 1, "ttft_p50_s": 8.305576864629984, "decode_tps_mean": 56.128520518313156, "kv_max_concurrency": 9.79},
+        {"max_num_batched_tokens": 4096, "batched_label": "4096", "concurrency": 4, "ttft_p50_s": 16.8877389151603, "decode_tps_mean": 14.315283663311973, "kv_max_concurrency": 9.79},
+        {"max_num_batched_tokens": 4096, "batched_label": "4096", "concurrency": 10, "ttft_p50_s": 41.48412576131523, "decode_tps_mean": 7.36197897754009, "kv_max_concurrency": 9.79},
+        {"max_num_batched_tokens": 8192, "batched_label": "8192", "concurrency": 1, "ttft_p50_s": 7.722194459289312, "decode_tps_mean": 55.984813128044784, "kv_max_concurrency": 5.93},
+        {"max_num_batched_tokens": 8192, "batched_label": "8192", "concurrency": 4, "ttft_p50_s": 15.996345953084528, "decode_tps_mean": 13.931608076790402, "kv_max_concurrency": 5.93},
+        {"max_num_batched_tokens": 8192, "batched_label": "8192", "concurrency": 10, "ttft_p50_s": 38.56648384407163, "decode_tps_mean": 6.507631428291688, "kv_max_concurrency": 5.93}
+      ],
+      "dspark_results": [
+        {"record_id": "DSP-GRAPH-001", "run": "graph-1K", "workload": "1,024 / 512", "execution_mode": "graph", "gpu_memory_utilization": 0.95, "kv_cache_memory_bytes": null, "prompt_tokens": 1024, "output_tokens": 512, "concurrency": 1, "success": "1/1", "ttft_p50_s": 0.15793449711054564, "decode_tps_mean": 341.4170341539311, "error": ""},
+        {"record_id": "DSP-GRAPH-002", "run": "graph-11K", "workload": "11,000 / 512", "execution_mode": "graph", "gpu_memory_utilization": 0.95, "kv_cache_memory_bytes": null, "prompt_tokens": 11000, "output_tokens": 512, "concurrency": 1, "success": "1/1", "ttft_p50_s": 1.3444004990160465, "decode_tps_mean": 301.33083962154285, "error": ""},
+        {"record_id": "DSP-GRAPH-003", "run": "graph-128K", "workload": "131,072 / 512", "execution_mode": "graph", "gpu_memory_utilization": 0.95, "kv_cache_memory_bytes": null, "prompt_tokens": 131072, "output_tokens": 512, "concurrency": 1, "success": "1/1", "ttft_p50_s": 25.028319806791842, "decode_tps_mean": 218.84432255003705, "error": ""},
+        {"record_id": "DSP-GRAPH-004", "run": "graph-260K", "workload": "260,000 / 512", "execution_mode": "graph", "gpu_memory_utilization": 0.95, "kv_cache_memory_bytes": null, "prompt_tokens": 260000, "output_tokens": 512, "concurrency": 1, "success": "0/1", "ttft_p50_s": null, "decode_tps_mean": null, "error": "OOM / shutdown"},
+        {"record_id": "DSP-GRAPH-005", "run": "graph-C2", "workload": "260,000 / 128", "execution_mode": "graph", "gpu_memory_utilization": null, "kv_cache_memory_bytes": 17179869184, "prompt_tokens": 260000, "output_tokens": 128, "concurrency": 2, "success": "2/2", "ttft_p50_s": 60.43262771330774, "decode_tps_mean": 105.79815882628169, "error": ""},
+        {"record_id": "DSP-GRAPH-006", "run": "graph-C3", "workload": "260,000 / 128", "execution_mode": "graph", "gpu_memory_utilization": null, "kv_cache_memory_bytes": 17179869184, "prompt_tokens": 260000, "output_tokens": 128, "concurrency": 3, "success": "1/3", "ttft_p50_s": 61.269325119443234, "decode_tps_mean": 20.194121276199525, "error": "illegal memory"},
+        {"record_id": "DSP-EAGER-001", "run": "eager-C3", "workload": "260,000 / 128", "execution_mode": "eager", "gpu_memory_utilization": 0.80, "kv_cache_memory_bytes": null, "prompt_tokens": 260000, "output_tokens": 128, "concurrency": 3, "success": "3/3", "ttft_p50_s": 119.75328781176358, "decode_tps_mean": 27.323185189241745, "error": ""},
+        {"record_id": "DSP-GRAPH-007", "run": "graph-C6", "workload": "260,000 / 128", "execution_mode": "graph", "gpu_memory_utilization": 0.80, "kv_cache_memory_bytes": null, "prompt_tokens": 260000, "output_tokens": 128, "concurrency": 6, "success": "6/6", "ttft_p50_s": 180.47580019570887, "decode_tps_mean": 48.891674812306114, "error": ""}
+      ],
+      "dspark_acceptance": [
+        {"snapshot": 1, "mean_acceptance_length": 5.00, "accepted_tokens": 24, "drafted_tokens": 30, "average_draft_acceptance_rate": 0.800},
+        {"snapshot": 2, "mean_acceptance_length": 5.00, "accepted_tokens": 8, "drafted_tokens": 10, "average_draft_acceptance_rate": 0.800},
+        {"snapshot": 3, "mean_acceptance_length": 3.31, "accepted_tokens": 296, "drafted_tokens": 640, "average_draft_acceptance_rate": 0.462},
+        {"snapshot": 4, "mean_acceptance_length": 3.17, "accepted_tokens": 26, "drafted_tokens": 60, "average_draft_acceptance_rate": 0.433},
+        {"snapshot": 5, "mean_acceptance_length": 2.28, "accepted_tokens": 409, "drafted_tokens": 1595, "average_draft_acceptance_rate": 0.256}
+      ]
+    },
+    "accessIssues": []
+  },
+  "sources": [
+    {
+      "id": "headline_target_sql",
+      "label": "Target headline query",
+      "path": "reports/queries/headline-target.sql",
+      "query": {"engine": "sqlite", "language": "sql", "sql": "SELECT record_id, ttft_p50_s, ttft_p95_s, decode_tps_mean, aggregate_tps, CAST(successful_requests AS REAL) / total_requests AS success_rate, successful_requests, total_requests FROM field_benchmarks WHERE record_id = 'TGT-GRAPH-001';", "description": "Selects the field-tested target-only C12 headline result.", "executed_at": "2026-08-15T16:00:00Z", "tables_used": ["reports/data/field-benchmark-summary-2026-08-13.csv"], "filters": ["record_id = TGT-GRAPH-001"], "metric_definitions": ["success_rate = successful_requests / total_requests", "aggregate_tps includes TTFT in the group wall span"]}
+    },
+    {
+      "id": "target_results_sql",
+      "label": "Target result query",
+      "path": "reports/queries/target-results.sql",
+      "query": {"engine": "sqlite", "language": "sql", "sql": "SELECT record_id, max_model_len, prompt_tokens, output_tokens, concurrency, successful_requests, total_requests, ttft_p50_s, ttft_p95_s, decode_tps_mean, aggregate_tps, e2e_p50_s FROM field_benchmarks WHERE record_id IN ('TGT-GRAPH-001', 'TGT-GRAPH-002') ORDER BY record_id;", "description": "Selects the two target-only CUDA Graph field results used for the production decision.", "executed_at": "2026-08-15T16:00:00Z", "tables_used": ["reports/data/field-benchmark-summary-2026-08-13.csv"], "filters": ["target-only CUDA Graph field runs"]}
+    },
+    {
+      "id": "gpu_summary_sql",
+      "label": "GPU summary query",
+      "path": "reports/queries/gpu-summary.sql",
+      "query": {"engine": "sqlite", "language": "sql", "sql": "SELECT gpu, active_samples, util_avg_percent, util_p95_percent, power_avg_w, power_max_w, memory_peak_mib FROM target_gpu_summary ORDER BY gpu;", "description": "Loads per-GPU active-sample summaries from the target-only C12 run.", "executed_at": "2026-08-15T16:00:00Z", "tables_used": ["reports/data/target-gpu-summary-2026-08-13.csv"], "filters": ["active samples from benchmark-target-only-20260813T173354Z"]}
+    },
+    {
+      "id": "mnb_tuning_sql",
+      "label": "Scheduler tuning query",
+      "path": "reports/queries/mnb-tuning.sql",
+      "query": {"engine": "sqlite", "language": "sql", "sql": "SELECT max_num_batched_tokens, CAST(max_num_batched_tokens AS TEXT) AS batched_label, concurrency, ttft_p50_s, decode_tps_mean, kv_max_concurrency FROM field_benchmarks WHERE record_id LIKE 'MNB-%' ORDER BY max_num_batched_tokens, concurrency;", "description": "Selects the 512K max_num_batched_tokens tuning matrix.", "executed_at": "2026-08-15T16:00:00Z", "tables_used": ["reports/data/field-benchmark-summary-2026-08-13.csv"], "filters": ["prompt_tokens = 65536", "output_tokens = 32", "max model len = 524288", "concurrency in 1,4,10"]}
+    },
+    {
+      "id": "dspark_results_sql",
+      "label": "DSpark result query",
+      "path": "reports/queries/dspark-results.sql",
+      "query": {"engine": "sqlite", "language": "sql", "sql": "SELECT record_id, execution_mode, gpu_memory_utilization, kv_cache_memory_bytes, prompt_tokens, output_tokens, concurrency, successful_requests, total_requests, ttft_p50_s, decode_tps_mean, error FROM field_benchmarks WHERE mode = 'dspark' ORDER BY run_utc, record_id;", "description": "Selects all supplied DSpark field-test groups, including failures.", "executed_at": "2026-08-15T16:00:00Z", "tables_used": ["reports/data/field-benchmark-summary-2026-08-13.csv"], "filters": ["mode = dspark"]}
+    },
+    {
+      "id": "dspark_acceptance_sql",
+      "label": "DSpark acceptance query",
+      "path": "reports/queries/dspark-acceptance.sql",
+      "query": {"engine": "sqlite", "language": "sql", "sql": "SELECT snapshot, mean_acceptance_length, accepted_tokens, drafted_tokens, average_draft_acceptance_rate FROM dspark_acceptance ORDER BY snapshot;", "description": "Loads five sequential speculative-decoding metric log snapshots.", "executed_at": "2026-08-15T16:00:00Z", "tables_used": ["reports/data/dspark-acceptance-snapshots-2026-08-13.csv"], "filters": ["five supplied log snapshots"]}
+    }
+  ]
+}

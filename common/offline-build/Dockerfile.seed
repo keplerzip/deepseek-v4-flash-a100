@@ -1,0 +1,65 @@
+ARG BUILD_BASE_IMAGE=dsv4-a100-build-base:f8ea5bb
+FROM ${BUILD_BASE_IMAGE}
+
+ARG PYPI_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG PYTORCH_CUDA_INDEX_URL=https://download.pytorch.org/whl/cu130
+ARG FLASHINFER_INDEX_URL=https://flashinfer.ai/whl/cu130
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    VIRTUAL_ENV=/opt/venv \
+    PATH=/opt/venv/bin:/opt/uv/bin:${PATH} \
+    TORCH_CUDA_ARCH_LIST=8.0 \
+    VLLM_TARGET_DEVICE=cuda \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1 \
+    HF_DATASETS_OFFLINE=1 \
+    VLLM_NO_USAGE_STATS=1 \
+    DO_NOT_TRACK=1 \
+    VLLM_CUTLASS_SRC_DIR=/opt/vendor/cutlass \
+    TRITON_KERNELS_SRC_DIR=/opt/vendor/triton/python/triton_kernels/triton_kernels \
+    DEEPGEMM_SRC_DIR=/opt/vendor/deepgemm \
+    FMHA_SM100_SRC_DIR=/opt/vendor/msa \
+    FLASH_MLA_SRC_DIR=/opt/vendor/flashmla \
+    FLASH_KDA_SRC_DIR=/opt/vendor/flashkda \
+    QUTLASS_SRC_DIR=/opt/vendor/qutlass \
+    TML_FA4_SRC_DIR=/opt/vendor/tml-fa4 \
+    VLLM_FLASH_ATTN_SRC_DIR=/opt/vendor/vllm-flash-attention
+
+# Everything below is collected on the connected host. The target-side build
+# later runs with --network none and does not invoke apt, pip, git or curl.
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+       libnuma-dev numactl ffmpeg libsm6 libxext6 libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements/build/cuda.txt /tmp/requirements-build-cuda.txt
+RUN uv pip install --python /opt/venv/bin/python3 \
+      --index-url "${PYPI_INDEX_URL}" \
+      --extra-index-url "${PYTORCH_CUDA_INDEX_URL}" \
+      -r /tmp/requirements-build-cuda.txt \
+    && uv pip install --python /opt/venv/bin/python3 \
+      --index-url "${FLASHINFER_INDEX_URL}" \
+      flashinfer-jit-cache==0.6.15.post1 \
+    && uv pip install --python /opt/venv/bin/python3 \
+      --index-url "${PYPI_INDEX_URL}" \
+      accelerate 'modelscope<1.38' 'bitsandbytes>=0.46.1' \
+      'timm>=1.0.17' 'runai-model-streamer[s3,gcs,azure]>=0.15.7'
+
+# The fixed vLLM checkout includes .git so setuptools-scm can derive the exact
+# version. Vendor inputs are exact pinned FetchContent trees, including their
+# recursive submodules. Rust is prebuilt on the connected host because Cargo
+# otherwise needs network access on the target.
+COPY . /opt/dsv4-source
+COPY --from=vendor / /opt/vendor/
+COPY --from=artifacts / /opt/offline-artifacts/
+COPY --from=seedfiles /build_inside_seed.sh /usr/local/bin/build_inside_seed.sh
+RUN chmod 0755 /usr/local/bin/build_inside_seed.sh \
+    && test -d /opt/dsv4-source/.git \
+    && test -x /opt/offline-artifacts/vllm-rs \
+    && test -n "$(find /opt/offline-artifacts -maxdepth 1 -name '_rust_*.so' -print -quit)" \
+    && git -C /opt/dsv4-source rev-parse HEAD \
+    && python3 -c 'import torch; assert torch.__version__.startswith("2.13.0"); assert torch.version.cuda == "13.0"'
+
+WORKDIR /opt/dsv4-source
+ENTRYPOINT ["/bin/bash"]
+CMD ["-l"]

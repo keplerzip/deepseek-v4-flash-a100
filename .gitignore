@@ -1,0 +1,59 @@
+# Local model and machine-specific configuration
+/config/model.env
+/config/*.local
+/config/*.local.*
+*.env.local
+
+# Model weights and auxiliary model payloads
+*.safetensors
+*.safetensors.index.json
+/encoding/
+/inference/
+
+# Built images, wheels, source snapshots, and offline dependency payloads
+/common/image/
+/common/wheelhouse/
+/common/target-build-output/
+/common/source/
+/common/offline-build/artifacts/
+/common/offline-build/vendor-src/
+/common/offline-build/vendor-export/
+*.tar
+*.tar.gz
+*.tar.xz
+*.tgz
+*.zst
+*.whl
+
+# Generated integrity manifests belong to a complete offline bundle, not the
+# source-only public repository.
+/checksums/SHA256SUMS
+/checksums/MODEL_SHA256SUMS
+
+# Runtime state and raw benchmark output
+/run/
+/logs/
+/benchmarks/results/
+
+# Raw machine/build reports. Curated performance reports stay tracked.
+/reports/*.log
+/reports/environment-report.txt
+/reports/gpu-guard-build-host-test.txt
+/reports/qa/*.png
+
+# Language/tool caches
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+node_modules/
+
+# Editor and OS files
+.DS_Store
+.idea/
+.vscode/
+*~
+*.swp

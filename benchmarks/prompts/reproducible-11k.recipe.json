@@ -1,0 +1,6 @@
+{
+  "target_tokens": 11000,
+  "method": "Use scripts/benchmark_api.py PromptFactory: repeat the fixed English seed, tokenize with the running local /tokenize endpoint, truncate to 11000 token IDs, and round-trip through /detokenize.",
+  "network": "local loopback API only",
+  "note": "This is not the original MiniMax-M2.7 prompt. Set BASELINE_PROMPT_FILE to use the actual prompt when available."
+}

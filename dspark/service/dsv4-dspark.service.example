@@ -1,0 +1,20 @@
+[Unit]
+Description=DeepSeek V4 Flash DSpark vLLM
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/absolute/path/to/deepseek-v4-flash-a100-offline
+Environment=PROFILE=256k
+Environment=EXECUTION_MODE=graph
+Environment=GPU_MEMORY_UTILIZATION=0.80
+Environment=MAX_NUM_BATCHED_TOKENS=
+ExecStart=/absolute/path/to/deepseek-v4-flash-a100-offline/dspark/start.sh
+ExecStop=/absolute/path/to/deepseek-v4-flash-a100-offline/dspark/stop.sh
+TimeoutStartSec=7500
+TimeoutStopSec=300
+
+[Install]
+WantedBy=multi-user.target
