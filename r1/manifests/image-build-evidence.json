@@ -1,0 +1,67 @@
+{
+  "recorded_at": "2026-08-20T22:58:02+08:00",
+  "scope": "Build-host compilation and offline image audit; not target A100 runtime or performance evidence.",
+  "build": {
+    "status": "pass",
+    "docker_server": "29.7.2",
+    "source_commit": "12810046c799cbe874967e19b1c0fa134ab7b209",
+    "source_repository": "https://github.com/haosdent/vllm.git",
+    "vllm_primary_cuda_arch": "8.0",
+    "max_compile_jobs": 4,
+    "nvcc_threads_per_job": 1,
+    "docker_cpu_quota": 400000,
+    "docker_build_exit": 0
+  },
+  "images": {
+    "base": {
+      "tag": "dsv4-a100:1281004-base",
+      "id": "sha256:fdc1071c008710b6d2e721235fef1b173899b1f83abf302c4a328b8ef99f0158",
+      "size_bytes": 8173017957,
+      "created": "2026-08-20T22:48:02.002089873+08:00",
+      "installed_tree_sha256": "pass"
+    },
+    "runtime": {
+      "tag": "dsv4-a100:1281004-r1-20260820",
+      "id": "sha256:4d7904dd75d90773bfc458eeda8e54d9b3a917bea31c050059d932e26f0013d2",
+      "size_bytes": 8173109148,
+      "created": "2026-08-20T22:53:46.344324687+08:00",
+      "installed_tree_sha256": "pass",
+      "base_image_id_label_matches": true,
+      "source_revision_label_matches": true
+    },
+    "source_tests": {
+      "tag": "dsv4-a100:1281004-r1-tests-20260820",
+      "id": "sha256:04655f1bb37b0f179d821a31065f85bb93239c1b56e4529ba129a60e701ff35f",
+      "size_bytes": 8176407202,
+      "created": "2026-08-20T22:53:51.793347196+08:00",
+      "offline_test_dependencies": {
+        "pytest": "9.1.1",
+        "pytest_asyncio": "1.4.0",
+        "tblib": "3.1.0",
+        "status": "pass"
+      }
+    }
+  },
+  "cuda_binary_audit": {
+    "status": "pass",
+    "method": "cuobjdump --list-elf inside the runtime image with no GPU or network",
+    "extensions": {
+      "vllm/_C_stable_libtorch.abi3.so": {
+        "sm_80_cubins": 55,
+        "observed_cubin_architectures": [
+          "sm_80"
+        ]
+      },
+      "vllm/_moe_C_stable_libtorch.abi3.so": {
+        "sm_80_cubins": 22,
+        "observed_cubin_architectures": [
+          "sm_80"
+        ]
+      }
+    }
+  },
+  "target_runtime": {
+    "status": "pending",
+    "reason": "The build host has no NVIDIA driver or GPU. Importing CUDA extensions requires the target-provided libcuda.so.1; model load and CUDA execution remain mandatory target gates."
+  }
+}

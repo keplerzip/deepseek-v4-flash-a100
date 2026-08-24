@@ -41,6 +41,22 @@
 /reports/gpu-guard-build-host-test.txt
 /reports/qa/*.png
 
+# DeepSeek V4 target R1 runtime output. Public templates and manifests stay tracked.
+/r1/config/secrets.env
+/r1/logs/*
+!/r1/logs/.gitkeep
+/r1/results/*
+!/r1/results/README.md
+/r1/images/*
+!/r1/images/README.md
+/r1/reports/qa/*
+!/r1/reports/qa/README.md
+!/r1/reports/qa/delivery-receipt.json
+!/r1/reports/qa/delivery-receipt-two.json
+!/r1/reports/qa/completed-layout-receipt.json
+!/r1/reports/qa/chart-map.json
+!/r1/reports/data/*.csv
+
 # Language/tool caches
 **/__pycache__/
 *.py[cod]

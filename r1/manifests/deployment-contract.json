@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "release": "2026.08.20-r1",
+  "api_network": {
+    "scope": "host-and-docker-internal",
+    "container_bind": "0.0.0.0:8005",
+    "host_loopback_publish": "127.0.0.1:8005",
+    "docker_bridge_publish": "runtime-default-bridge-gateway:8005",
+    "host_base_url": "http://127.0.0.1:8005/v1",
+    "docker_base_url": "http://host.docker.internal:8005/v1",
+    "docker_host_mapping": "host.docker.internal:host-gateway",
+    "health_path": "/v1/models",
+    "lan_exposed": false,
+    "host_network_forbidden": true
+  },
+  "scheme_exclusion": {
+    "simultaneous_run_allowed": false,
+    "reason": "schemes share port 8005 and overlap on GPUs 4-7"
+  }
+}

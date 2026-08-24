@@ -1,0 +1,62 @@
+{
+  "server_context_window": 262144,
+  "contexts": {
+    "start": 10000,
+    "stop": 200000,
+    "step": 10000,
+    "count": 20
+  },
+  "schemes": {
+    "one": {
+      "label": "方案一（8 卡，GPU 0-7）",
+      "gpu_devices": "0,1,2,3,4,5,6,7",
+      "tensor_parallel_size": 8,
+      "scheduler_max_num_seqs": 32,
+      "stability_concurrency": 32,
+      "matrix_cells": 320,
+      "concurrency": {
+        "start": 1,
+        "stop": 16,
+        "step": 1,
+        "count": 16
+      },
+      "planned_requests_per_repetition": 2720,
+      "theoretical_full_256k_concurrency": 19.58
+    },
+    "two": {
+      "label": "方案二（4 卡，GPU 4-7）",
+      "gpu_devices": "4,5,6,7",
+      "tensor_parallel_size": 4,
+      "scheduler_max_num_seqs": 16,
+      "stability_concurrency": 16,
+      "matrix_cells": 160,
+      "concurrency": {
+        "start": 1,
+        "stop": 8,
+        "step": 1,
+        "count": 8
+      },
+      "planned_requests_per_repetition": 720,
+      "theoretical_full_256k_concurrency": 11.8,
+      "capacity_estimate": {
+        "a100_memory_gib": 80,
+        "measured_tp8_model_gib_per_gpu": 19.81,
+        "measured_tp8_kv_gib_per_gpu": 49.83,
+        "estimated_tp4_model_gib_per_gpu": 39.62,
+        "estimated_tp4_kv_gib_per_gpu": 30.02,
+        "method": "TP4 doubles the measured TP8 weight shard; the measured non-KV reserve is held constant, and full-256K KV concurrency scales with remaining KV memory.",
+        "status": "planning estimate; target startup log is authoritative"
+      }
+    }
+  },
+  "request_transport": "OpenAI-compatible streaming chat completions",
+  "prefix_cache_isolation": "unique 256-bit cache_salt per request",
+  "default_repetitions": 1,
+  "metrics": [
+    "prompt token realization",
+    "TTFT p50/p95/p99",
+    "end-to-end latency p50/p95/p99",
+    "input/output/total token throughput",
+    "success and error counts"
+  ]
+}

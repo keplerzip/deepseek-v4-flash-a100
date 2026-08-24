@@ -1,0 +1,73 @@
+{
+  "checked_at": "2026-08-20T20:23:01+08:00",
+  "verification_method": "Fresh GitHub REST and npm registry responses",
+  "vllm": {
+    "latest_stable_release": {
+      "tag": "v0.27.1",
+      "commit": "6e448d0ea9bf3d88d898b65449ca6dc2aec170ac",
+      "published_at": "2026-08-11T10:47:49Z",
+      "verified_from": "https://api.github.com/repos/vllm-project/vllm/releases/latest"
+    },
+    "a100_target_base_comparison": {
+      "target_commit": "12810046c799cbe874967e19b1c0fa134ab7b209",
+      "target_commit_date": "2026-08-11T03:02:06Z",
+      "official_comparison_tag": "v0.27.1",
+      "files_changed": 247,
+      "reason": "The target snapshot adds DeepSeek-V4 Flash SM80 sparse-MLA kernels, tests, and serving changes not present in the same-day generic stable tag."
+    },
+    "pr_51727": {
+      "state": "merged",
+      "merge_commit": "8bcc916a98a90822882455ab30aba02c409da2a6",
+      "head": "bd1ad2af4a2a6b48ceaaba7113485a5e45fad27f"
+    },
+    "pr_51368": {
+      "state": "merged",
+      "merge_commit": "a9f4afb66f77ba122d905611fa3f620abda98220"
+    },
+    "pr_52645": {
+      "state": "open",
+      "updated_at": "2026-08-19T22:10:32Z",
+      "included_through": "c848ab5aa41b8bd848fcdf169c43fea278f7e751",
+      "excluded_head": "4f2aae22cd043e7c9384f578a9e546ec848abe73"
+    },
+    "issue_48874": {
+      "state": "open",
+      "updated_at": "2026-08-19T17:25:24Z",
+      "purpose": "Claude Code inline system compatibility"
+    },
+    "pr_52978": {
+      "state": "open",
+      "updated_at": "2026-08-19T17:25:56Z",
+      "head": "73a8cbe4a2941dd46d953771d9ad5f1ba53f733f"
+    }
+  },
+  "clients": {
+    "codex_npm_latest_stable": "0.148.0",
+    "claude_code_npm_latest": "2.1.237",
+    "claude_gateway_model_discovery": true,
+    "claude_custom_model_option": true
+  },
+  "model": {
+    "official_checkpoint": "deepseek-ai/DeepSeek-V4-Flash-0731",
+    "official_revision": "9e165c30e2704aec5d9d593cce3eebd58bbef1cb",
+    "repository_size_display": "167 GB",
+    "max_position_embeddings": 1048576,
+    "architecture": "DeepseekV4ForCausalLM",
+    "weight_precision": "FP8 with FP4 experts",
+    "target_observed_directory_gib": 155.44,
+    "target_observed_shards": 48
+  },
+  "sources": [
+    "https://github.com/vllm-project/vllm/pull/51727",
+    "https://github.com/vllm-project/vllm/pull/51368",
+    "https://github.com/vllm-project/vllm/pull/52645",
+    "https://github.com/vllm-project/vllm/issues/48874",
+    "https://github.com/vllm-project/vllm/pull/52978",
+    "https://registry.npmjs.org/@openai%2Fcodex/latest",
+    "https://registry.npmjs.org/@anthropic-ai%2Fclaude-code/latest",
+    "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731/blob/main/config.json",
+    "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731/tree/main",
+    "https://code.claude.com/docs/en/llm-gateway",
+    "https://code.claude.com/docs/en/model-config"
+  ]
+}

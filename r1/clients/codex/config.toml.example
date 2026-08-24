@@ -1,0 +1,13 @@
+# Isolated Codex configuration for the target-only DeepSeek V4 endpoint.
+model = "deepseek-v4-flash-0731-target"
+model_provider = "dsv4_target"
+model_context_window = 262144
+
+[model_providers.dsv4_target]
+name = "DeepSeek V4 Flash A100 target"
+base_url = "http://127.0.0.1:8005/v1"
+env_key = "DSV4_API_KEY"
+wire_api = "responses"
+request_max_retries = 2
+stream_max_retries = 2
+stream_idle_timeout_ms = 1800000

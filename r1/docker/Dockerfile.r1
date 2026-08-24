@@ -1,0 +1,38 @@
+ARG BASE_IMAGE=dsv4-a100:1281004-base
+FROM ${BASE_IMAGE}
+
+ARG BASE_IMAGE_ID=unknown
+ARG RELEASE_VERSION=2026.08.20-r1
+
+LABEL org.opencontainers.image.title="DeepSeek V4 Flash A100 target R1" \
+      org.opencontainers.image.version="${RELEASE_VERSION}" \
+      org.opencontainers.image.revision="12810046c799cbe874967e19b1c0fa134ab7b209" \
+      org.opencontainers.image.source="https://github.com/haosdent/vllm.git" \
+      com.deepseek.deployment.method="target" \
+      com.deepseek.base-image="dsv4-a100:1281004-base" \
+      com.deepseek.base-image.id="${BASE_IMAGE_ID}" \
+      com.deepseek.release="${RELEASE_VERSION}"
+
+COPY r1/manifests/base-python.sha256 /opt/dsv4-r1/manifests/base-python.sha256
+COPY r1/manifests/r1-python.sha256 /opt/dsv4-r1/manifests/r1-python.sha256
+COPY r1/manifests/source-lock.json /opt/dsv4-r1/manifests/source-lock.json
+COPY r1/docker/install_overlay.py /opt/dsv4-r1/install_overlay.py
+COPY r1/scripts/verify_installed_tree.py /opt/dsv4-r1/verify_installed_tree.py
+
+COPY vllm/tokenizers/deepseek_v4.py /opt/dsv4-r1/overlay/vllm/tokenizers/deepseek_v4.py
+COPY vllm/tokenizers/deepseek_v32.py /opt/dsv4-r1/overlay/vllm/tokenizers/deepseek_v32.py
+COPY vllm/parser/deepseek_v4.py /opt/dsv4-r1/overlay/vllm/parser/deepseek_v4.py
+COPY vllm/parser/deepseek_v32.py /opt/dsv4-r1/overlay/vllm/parser/deepseek_v32.py
+COPY vllm/parser/engine/parser_engine_config.py /opt/dsv4-r1/overlay/vllm/parser/engine/parser_engine_config.py
+COPY vllm/parser/engine/streaming_parser_engine.py /opt/dsv4-r1/overlay/vllm/parser/engine/streaming_parser_engine.py
+COPY vllm/models/deepseek_v4/nvidia/model.py /opt/dsv4-r1/overlay/vllm/models/deepseek_v4/nvidia/model.py
+COPY vllm/entrypoints/anthropic/serving.py /opt/dsv4-r1/overlay/vllm/entrypoints/anthropic/serving.py
+
+RUN python3 /opt/dsv4-r1/install_overlay.py \
+      --overlay-root /opt/dsv4-r1/overlay \
+      --base-manifest /opt/dsv4-r1/manifests/base-python.sha256 \
+      --release-manifest /opt/dsv4-r1/manifests/r1-python.sha256 \
+      --record /opt/dsv4-r1/install-record.json \
+    && python3 /opt/dsv4-r1/verify_installed_tree.py \
+      --manifest /opt/dsv4-r1/manifests/r1-python.sha256 \
+    && rm -rf /opt/dsv4-r1/overlay /opt/dsv4-r1/install_overlay.py

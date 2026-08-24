@@ -1,0 +1,72 @@
+{
+  "release": "2026.08.20-r1",
+  "scope": "deepseek-v4-flash-a100-target-only",
+  "repository": "https://github.com/haosdent/vllm.git",
+  "base_commit": "12810046c799cbe874967e19b1c0fa134ab7b209",
+  "base_image": "dsv4-a100:1281004-base",
+  "release_image": "dsv4-a100:1281004-r1-20260820",
+  "target_delivery": {
+    "mode": "precompiled-offline-docker-load",
+    "build_host_max_jobs": 4,
+    "nvcc_threads": 1,
+    "cuda_arch": "8.0",
+    "target_build_or_download": false,
+    "external_model_dir": "/ai/models/deepseek-v4-flash-0731-modelscope"
+  },
+  "legacy_convergence": {
+    "release_commit": "f8ea5bb163c161ef38b401d055cc5fd4a934091a",
+    "container_names": [
+      "dsv4-target-only-f8ea5bb",
+      "dsv4-dspark-f8ea5bb"
+    ],
+    "action": "stop-if-running-after-exact-three-label-ownership-check",
+    "remove_container_or_image": false
+  },
+  "base_source_archive": {
+    "path": "r1/base/vllm-1281004-source.tar.gz",
+    "sha256": "faf7f5f01d266ee9c6524643b64a8876ef0e969fd13e6ebac2dbd895354a21b9"
+  },
+  "server": {
+    "max_model_len": 262144,
+    "max_num_seqs": 32,
+    "tensor_parallel_size": 8,
+    "method": "target"
+  },
+  "backports": [
+    {
+      "source_pr": 51727,
+      "source_merge_commit": "8bcc916a98a90822882455ab30aba02c409da2a6",
+      "source_head_commit": "bd1ad2af4a2a6b48ceaaba7113485a5e45fad27f",
+      "mode": "clean cherry-pick of reviewed merged diff",
+      "purpose": "DeepSeek V4/V3.2 tokenizer vocab length"
+    },
+    {
+      "source_pr": 51368,
+      "source_merge_commit": "a9f4afb66f77ba122d905611fa3f620abda98220",
+      "mode": "target-only semantic subset",
+      "purpose": "post-load finalization; no forward-time MegaMoE repack"
+    },
+    {
+      "source_pr": 52645,
+      "through_commit": "c848ab5aa41b8bd848fcdf169c43fea278f7e751",
+      "excluded_commit": "4f2aae22cd043e7c9384f578a9e546ec848abe73",
+      "mode": "semantic adaptation over existing orphan recovery",
+      "purpose": "malformed DSML recovery with full invoke commit and shared V3.2 parser-config parity"
+    },
+    {
+      "source_pr": 52978,
+      "source_commit": "73a8cbe4a2941dd46d953771d9ad5f1ba53f733f",
+      "state_as_of_2026_08_20": "open",
+      "mode": "minimal request-conversion subset",
+      "purpose": "Claude Code 2.1.207+ trailing system turn"
+    }
+  ],
+  "explicit_exclusions": [
+    "PR #47629",
+    "PR #50645",
+    "PR #52645 commit 4f2aae22cd04",
+    "DSpark/MTP runtime hooks",
+    "speculative decoding",
+    "unrelated vLLM main performance commits"
+  ]
+}

@@ -1,0 +1,34 @@
+.git
+.venv
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Machine-local configuration and runtime state
+config/model.env
+r1/config/secrets.env
+run/
+logs/
+r1/logs/
+r1/results/
+r1/reports/
+reports/*.log
+reports/environment-report.txt
+
+# Large source-only exclusions and generated payloads
+checksums/
+common/image/
+common/source/
+common/target-build-output/
+common/offline-build/artifacts/
+common/offline-build/vendor-src/
+common/offline-build/vendor-export/
+r1/base/*.tar.gz
+r1/images/
+
+node_modules/
+rust/target/
+build/
+dist/

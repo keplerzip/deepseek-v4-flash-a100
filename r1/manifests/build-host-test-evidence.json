@@ -1,0 +1,85 @@
+{
+  "recorded_at": "2026-08-20T18:20:00+08:00",
+  "scope": "Build-host source compatibility only; not target A100 performance evidence.",
+  "environment": {
+    "execution": "Docker only",
+    "docker_server": "29.7.2",
+    "test_image": "dsv4-r1-pytest-deps:20260820",
+    "test_image_id": "sha256:d66e2768c8c7672d6c49627d7d316caf26df1f01a590198a42f70b63e46fcab8",
+    "pytest_invocation": "python3 -m pytest -q -p no:cacheprovider",
+    "cpu_collection_environment": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "VLLM_TARGET_DEVICE": "empty"
+    },
+    "nvidia_smi_present": false,
+    "fixed_base_image_present": false,
+    "target_gpu_claims_allowed": false
+  },
+  "counting_note": "The 105 focused DeepSeek V4 parser tests are contained in the 3802-test full parser-engine suite and are not double-counted.",
+  "unique_tests_passed": 3885,
+  "suites": [
+    {
+      "path": "tests/parser/engine/test_deepseek_v4.py",
+      "passed": 105,
+      "failed": 0,
+      "skipped": 0,
+      "counted_in_unique_total": false
+    },
+    {
+      "path": "tests/parser/engine",
+      "passed": 3802,
+      "failed": 0,
+      "skipped": 0,
+      "counted_in_unique_total": true
+    },
+    {
+      "path": "tests/tokenizers_/test_deepseek_v4.py",
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0,
+      "counted_in_unique_total": true
+    },
+    {
+      "path": "tests/entrypoints/anthropic/test_anthropic_messages_conversion.py",
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0,
+      "counted_in_unique_total": true
+    },
+    {
+      "path": "tests/models/test_deepseek_v4_target_post_load_contract.py",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "counted_in_unique_total": true
+    }
+  ],
+  "cuda_mega_moe": {
+    "path": "tests/models/test_deepseek_v4_mega_moe.py",
+    "passed": 0,
+    "failed": 0,
+    "skipped": 5,
+    "reason": "Build host has no CUDA GPU.",
+    "target_gate_required": true,
+    "target_gate_skip_policy": "zero skips allowed"
+  },
+  "regression_found_and_resolved": {
+    "initial_full_parser_result": "3788 passed, 14 failed",
+    "affected_parser": "DeepSeek V3.2 orphan-invoke recovery",
+    "cause": "The shared parser engine required provisional commit and tool-name validation flags that the V3.2 config had not enabled.",
+    "resolution": "Aligned the V3.2 parser config with the hardened shared-engine contract.",
+    "focused_v32_rerun": "38 passed",
+    "final_full_parser_result": "3802 passed"
+  },
+  "offline_source_test_layer_smoke": {
+    "status": "pass",
+    "image": "dsv4-r1-source-tests-smoke:20260820",
+    "image_id": "sha256:fd6c22bd9b8ce28fcba33891752c80c0f066ee6f3c7fbc3a05aea4bb44743c3a",
+    "network": "none",
+    "verified_packages": [
+      "pytest==9.1.1",
+      "pytest-asyncio==1.4.0",
+      "tblib==3.1.0"
+    ]
+  }
+}

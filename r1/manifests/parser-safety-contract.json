@@ -1,0 +1,80 @@
+{
+  "test_file": "tests/parser/engine/test_deepseek_v4.py",
+  "requirements": [
+    {
+      "id": "missing_tool_calls_wrapper",
+      "tests": [
+        "test_non_streaming_orphan_invoke",
+        "test_streaming_orphan_invoke_split_marker",
+        "test_streaming_orphan_invoke_char_by_char"
+      ]
+    },
+    {
+      "id": "toolcalls_typo_recovery",
+      "tests": ["test_known_malformed_wrapper_recovers_without_dsml_leak"]
+    },
+    {
+      "id": "declared_tools_only",
+      "tests": [
+        "test_undeclared_name_stays_content",
+        "test_wrapped_undeclared_name_is_not_executable",
+        "test_parallel_second_undeclared_name_never_executes"
+      ]
+    },
+    {
+      "id": "commit_only_after_complete_invoke",
+      "tests": [
+        "test_valid_name_without_invoke_end_rolls_back",
+        "test_tool_end_without_invoke_end_rolls_back",
+        "test_streaming_emits_nothing_before_invoke_end"
+      ]
+    },
+    {
+      "id": "truncation_rolls_back_to_text",
+      "tests": [
+        "test_truncated_name_flushes_content",
+        "test_streaming_ends_mid_name_flushes_content",
+        "test_truncated_recovery_drops_eos_special_token"
+      ]
+    },
+    {
+      "id": "tool_choice_none_never_recovers",
+      "tests": ["test_tool_choice_none_keeps_quoted_invoke_as_content"]
+    },
+    {
+      "id": "suffix_content_preserved",
+      "tests": [
+        "test_trailing_prose_after_orphan_invoke_is_kept",
+        "test_streaming_trailing_prose_after_orphan_invoke_is_kept"
+      ]
+    },
+    {
+      "id": "parallel_and_consecutive_calls",
+      "tests": [
+        "test_orphan_parallel_invokes",
+        "test_parallel_orphan_invokes_with_declared_tools",
+        "test_whitespace_between_parallel_orphan_invokes_is_ignored"
+      ]
+    },
+    {
+      "id": "streaming_nonstreaming_parity",
+      "tests": [
+        "test_non_streaming_orphan_matches_wrapped_parse",
+        "test_tool_calls_extracted_at_all_chunk_sizes",
+        "test_streaming_wrapper_unwrap_consistency"
+      ]
+    },
+    {
+      "id": "argument_types_and_multiline",
+      "tests": [
+        "test_string_param",
+        "test_integer_param",
+        "test_float_param",
+        "test_bool_param",
+        "test_array_param",
+        "test_object_param"
+      ],
+      "live_test": "r1/tests/tool_matrix_test.py"
+    }
+  ]
+}

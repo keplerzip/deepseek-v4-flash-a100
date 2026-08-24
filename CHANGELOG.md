@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026.08.20-r1 — 2026-08-24 source publication
+
+- 升级固定 base 到 `haosdent/vllm@12810046c799cbe874967e19b1c0fa134ab7b209`；
+- 新增 8×A100/TP8 与 4×A100/TP4 两个互斥的 256K target-only 方案；
+- 加入 tokenizer、parser、post-load 和 Claude Code 请求转换的经审计 overlay；
+- API 发布范围收紧到宿主机 loopback 与 Docker 默认桥接网关；
+- 新增 500 请求稳定性门禁、320/160 格性能矩阵和自包含报告；
+- 新增完整离线包的镜像校验、加载、回滚、旧版安全收敛与归档热修复流程；
+- GitHub 继续保持 source-only：不提交模型、镜像、固定源码 tar、wheels、密钥或日志。
+
 ## 1.4.0-f8ea5bb-structure — 2026-08-18
 
 - 清理根目录，将 Codex 指南、已知限制、checksum 说明和源码更新清单归入职责目录；

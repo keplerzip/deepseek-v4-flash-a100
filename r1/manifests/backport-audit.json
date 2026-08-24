@@ -1,0 +1,46 @@
+{
+  "audited_at": "2026-08-20T17:55:00+08:00",
+  "repository": "https://github.com/haosdent/vllm.git",
+  "base_commit": "12810046c799cbe874967e19b1c0fa134ab7b209",
+  "entries": [
+    {
+      "source": "vLLM PR #51727",
+      "source_merge_commit": "8bcc916a98a90822882455ab30aba02c409da2a6",
+      "local_commit": "6fb90aec892d5c8be5979c34f002089e3decfa06",
+      "application": "reviewed merged diff applied to the fixed base",
+      "git_conflict": false,
+      "resolution": "No textual conflict. Runtime and fake-tokenizer invariants pin len(tokenizer) == config.vocab_size == 129280."
+    },
+    {
+      "source": "vLLM PR #51368",
+      "source_merge_commit": "a9f4afb66f77ba122d905611fa3f620abda98220",
+      "local_commit": "30ca450d76879fc5a7d515a70f14adf77c57b2fa",
+      "application": "manual target-only semantic subset",
+      "git_conflict": null,
+      "resolution": "A whole cherry-pick was intentionally not attempted. The existing target post-load hook was retained; forward-time MegaMoE finalization was removed. MTP and DSpark runtime hooks were excluded after the later target-only scope decision."
+    },
+    {
+      "source": "vLLM PR #52645 through c848ab5aa41b8bd848fcdf169c43fea278f7e751",
+      "excluded_source_commit": "4f2aae22cd043e7c9384f578a9e546ec848abe73",
+      "local_commit": "da156f0100a1e8fa66a97e39b54a15b55362229d",
+      "followup_delivery_revision": "r1/manifests/delivery-git-sha.txt",
+      "application": "manual semantic adaptation over the fixed base's earlier orphan recovery",
+      "git_conflict": null,
+      "resolution": "The parser was not overwritten. Existing #49117 recovery was retained, then declaration checks, full-invoke commit, truncation rollback, suffix preservation, and streaming parity were added with focused tests. Full parser-engine regression exposed the same shared-engine commit flag missing from DeepSeek V3.2; its config was aligned and the complete suite passed 3802 tests."
+    },
+    {
+      "source": "vLLM PR #52978 at 73a8cbe4a2941dd46d953771d9ad5f1ba53f733f",
+      "local_commit": "3beb0096a5d586e5da8da19ea7fa51b15ed1747f",
+      "application": "minimal Anthropic request-conversion subset",
+      "git_conflict": null,
+      "resolution": "Only trailing Claude Code system-turn folding and de-duplication were ported; native vLLM Anthropic endpoints remain in use."
+    }
+  ],
+  "explicitly_excluded": [
+    "vLLM PR #47629",
+    "vLLM PR #50645",
+    "vLLM PR #52645 commit 4f2aae22cd043e7c9384f578a9e546ec848abe73",
+    "stock vLLM main and dsv4-flash-a100 branch HEAD",
+    "DSpark, MTP, speculative decoding, and unverified performance PRs"
+  ]
+}

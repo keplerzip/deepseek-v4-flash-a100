@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "surface": "portable HTML technical report",
+  "charts": [
+    {
+      "id": "coverage",
+      "section": "Execution coverage",
+      "question": "How much of the required 320-cell matrix has executed?",
+      "family": "comparison and status",
+      "type": "bar",
+      "fields": [
+        "state",
+        "cells"
+      ],
+      "supported_takeaway": "Complete, failed, and pending cells remain explicit before any performance conclusion.",
+      "palette_policy": "categorical states with labels; no performance value is encoded",
+      "source_id": "matrix-summary"
+    },
+    {
+      "id": "ttft-heatmap",
+      "section": "P95 first-token latency",
+      "question": "How does P95 TTFT vary with context and concurrency?",
+      "family": "matrix and cohort",
+      "type": "heatmap",
+      "fields": [
+        "context_k",
+        "c1..c16"
+      ],
+      "supported_takeaway": "The matrix locates long-context prefill pressure while retaining blank unmeasured cells.",
+      "palette_policy": "single-root sequential",
+      "source_id": "matrix-rows"
+    },
+    {
+      "id": "throughput-heatmap",
+      "section": "Total token throughput",
+      "question": "How does total throughput vary with context and concurrency?",
+      "family": "matrix and cohort",
+      "type": "heatmap",
+      "fields": [
+        "context_k",
+        "c1..c16"
+      ],
+      "supported_takeaway": "Adjacent cells expose saturation without treating pending or failed cells as zero.",
+      "palette_policy": "single-root sequential",
+      "source_id": "matrix-rows"
+    }
+  ],
+  "qa": {
+    "pending_state": {
+      "charts": 1,
+      "metrics": 7,
+      "tables": 1
+    },
+    "synthetic_completed_state": {
+      "charts": 3,
+      "metrics": 7,
+      "tables": 1,
+      "performance_evidence": false
+    },
+    "viewports": [
+      1440,
+      390
+    ],
+    "external_requests": 0,
+    "source_dialog": "passed"
+  }
+}

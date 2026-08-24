@@ -1,22 +1,27 @@
 # 开源项目致谢与第三方声明
 
 本项目是一套部署、验证和运维脚本，不是 DeepSeek、vLLM 或 NVIDIA 的官方发行版。
-模型权重、容器镜像、Python wheels、编译产物和下列仓库的源码副本均不包含在本公开
-GitHub 仓库中。它们分别受各自许可证、模型许可证和使用条款约束；本项目的许可证不会
-覆盖或改变第三方项目的许可证。
+模型权重、容器镜像、Python wheels、编译产物和完整上游源码快照均不包含在本公开
+GitHub 仓库中。R1 仅保留八个经审计的 vLLM overlay 源文件及相关测试；它们与外部
+依赖分别受各自许可证、模型许可证和使用条款约束，本项目的许可证不会覆盖或改变这些
+第三方条款。
 
 ## 核心项目
 
 - [DeepSeek-V4-Flash-0731](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731)：
   本项目部署的模型与 DeepSeek V4 消息编码来源。感谢 DeepSeek 团队公开模型及相关实现。
   权重也可由用户自行通过 ModelScope 获取，但本仓库不分发权重或模型辅助文件。
-- [haosdent/vllm](https://github.com/haosdent/vllm)：本项目在 A100 上使用的社区 vLLM
+- [haosdent/vllm](https://github.com/haosdent/vllm)：R1 在 A100 上使用的社区 vLLM
   实现，精确固定到 commit
-  `f8ea5bb163c161ef38b401d055cc5fd4a934091a`。特别感谢该社区分支提供 DeepSeek V4、
-  DSpark 和 A100 fallback 路径。
+  `12810046c799cbe874967e19b1c0fa134ab7b209`。早期兼容路径仍记录其
+  `f8ea5bb163c161ef38b401d055cc5fd4a934091a` 固定版本。
 - [vllm-project/vllm](https://github.com/vllm-project/vllm)：vLLM 上游项目及生态基础。
   vLLM 相关许可证副本见
   [`common/licenses/vllm-Apache-2.0.txt`](common/licenses/vllm-Apache-2.0.txt)。
+
+R1 的 base、backport 来源、纳入与排除范围记录在
+[`r1/manifests/source-lock.json`](r1/manifests/source-lock.json) 和
+[`r1/manifests/backport-audit.json`](r1/manifests/backport-audit.json)。
 
 ## 固定的离线构建依赖
 

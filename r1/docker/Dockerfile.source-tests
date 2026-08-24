@@ -1,0 +1,25 @@
+ARG R1_IMAGE=dsv4-a100:1281004-r1-20260820
+FROM ${R1_IMAGE}
+
+ARG R1_IMAGE_ID=unknown
+ARG RELEASE_VERSION=2026.08.20-r1
+
+LABEL org.opencontainers.image.title="DeepSeek V4 Flash A100 R1 source tests" \
+      org.opencontainers.image.version="${RELEASE_VERSION}" \
+      org.opencontainers.image.revision="12810046c799cbe874967e19b1c0fa134ab7b209" \
+      com.deepseek.deployment.method="target-test-only" \
+      com.deepseek.parent-image.id="${R1_IMAGE_ID}" \
+      com.deepseek.release="${RELEASE_VERSION}"
+
+COPY r1/test-wheelhouse /opt/dsv4-test-wheelhouse
+RUN cd /opt/dsv4-test-wheelhouse \
+    && sha256sum -c sha256sums.txt \
+    && python3 -m pip install \
+         --disable-pip-version-check \
+         --no-cache-dir \
+         --no-index \
+         --find-links=/opt/dsv4-test-wheelhouse \
+         pytest==9.1.1 pytest-asyncio==1.4.0 tblib==3.1.0 \
+    && python3 -m pytest --version \
+    && python3 -c 'import pytest_asyncio, tblib; assert pytest_asyncio.__version__ == "1.4.0"; assert tblib.__version__ == "3.1.0"' \
+    && rm -rf /opt/dsv4-test-wheelhouse

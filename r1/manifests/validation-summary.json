@@ -1,0 +1,145 @@
+{
+  "checked_at": "2026-08-20T22:58:02+08:00",
+  "build_host": {
+    "docker_server": "29.7.2",
+    "fixed_base_image_present": true,
+    "precompiled_release_images_present": true,
+    "nvidia_smi_present": false,
+    "target_gpu_claims_allowed": false
+  },
+  "source_compatibility": {
+    "status": "pass",
+    "tests_passed": 3885,
+    "breakdown": {
+      "parser_engine": 3802,
+      "tokenizer": 31,
+      "anthropic_conversion": 50,
+      "target_lifecycle_contract": 2,
+      "focused_v4_parser_subset_also_passed": 105,
+      "cuda_mega_moe_skipped_on_build_host": 5
+    },
+    "ruff": "pass",
+    "gpu_required": false,
+    "target_gpu_gap": "Five CUDA MegaMoE tests remain mandatory on the target and permit zero skips."
+  },
+  "release_package": {
+    "status": "pass",
+    "contract_tests_passed": 28,
+    "bash_syntax": "pass",
+    "shellcheck": {
+      "status": "pass",
+      "version": "0.11.0",
+      "image_digest": "sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d"
+    },
+    "forced_sudo_n_docker_path": "pass",
+    "target_driver_guard": {
+      "status": "pass",
+      "minimum": "580.126.20",
+      "query_path": "nvidia-smi inside the precompiled image"
+    },
+    "base_source_archive_sha256": "pass",
+    "legacy_container_convergence": {
+      "status": "pass",
+      "method": "Real Docker simulation plus repeatable fake-Docker contract test using both exact earliest-release names and ownership labels",
+      "recognized_running_container_stopped": true,
+      "container_retained_after_stop": true,
+      "wrong_owner_rejected": true,
+      "container_or_image_deleted_by_script": false
+    },
+    "pruned_offline_layout": {
+      "status": "pass",
+      "size_before_image_payload": "63 MiB",
+      "contract_tests_passed_from_staged_layout": 28,
+      "top_level": [
+        "README.md",
+        "START-HERE.md",
+        "LICENSE",
+        "start.sh",
+        "start_one.sh",
+        "start_two.sh",
+        "stop.sh",
+        "status.sh",
+        "status_one.sh",
+        "status_two.sh",
+        "run-tests.sh",
+        "benchmark_one.sh",
+        "benchmark_two.sh",
+        "report.sh",
+        "report_one.sh",
+        "report_two.sh",
+        "r1/",
+        "tests/",
+        "vllm/"
+      ]
+    }
+  },
+  "portable_report": {
+    "status": "pass",
+    "canonical_artifact_validation": "pass",
+    "browser_viewports": [
+      1440,
+      390
+    ],
+    "source_interaction": "pass",
+    "external_requests": 0,
+    "pending_report_blocks": {
+      "charts": 1,
+      "metrics": 7,
+      "tables": 1
+    },
+    "scheme_two_pending_report": {
+      "status": "pass",
+      "matrix_cells": 160,
+      "browser_viewports": [
+        1440,
+        390
+      ],
+      "source_interaction": "pass",
+      "external_requests": 0,
+      "charts": 1,
+      "metrics": 7,
+      "tables": 1
+    },
+    "target_runtime_repack_browser_validation": "pass",
+    "portable_reader_vertical_scroll_overflow_fix": "pass",
+    "completed_state_layout_fixture": {
+      "status": "pass",
+      "charts": 3,
+      "metrics": 7,
+      "tables": 1,
+      "scope": "Synthetic, non-deliverable values used only to exercise the completed-report rendering branch; not performance evidence."
+    }
+  },
+  "target_8xa100": {
+    "image_build": "pass",
+    "image_build_evidence": {
+      "manifest": "r1/manifests/image-build-evidence.json",
+      "source_commit": "12810046c799cbe874967e19b1c0fa134ab7b209",
+      "compiler_parallelism": 4,
+      "base_image_id": "sha256:fdc1071c008710b6d2e721235fef1b173899b1f83abf302c4a328b8ef99f0158",
+      "runtime_image_id": "sha256:4d7904dd75d90773bfc458eeda8e54d9b3a917bea31c050059d932e26f0013d2",
+      "source_test_image_id": "sha256:04655f1bb37b0f179d821a31065f85bb93239c1b56e4529ba129a60e701ff35f",
+      "sm80_binary_audit": "pass"
+    },
+    "model_load": "pending",
+    "api_contract": "pending",
+    "source_test_suite_with_zero_megamoe_skips": "pending",
+    "tool_matrix_36_cases_156_requests": "pending",
+    "scheme_one": {
+      "gpu_devices": "0-7",
+      "tensor_parallel_size": 8,
+      "scheduler_max_num_seqs": 32,
+      "stability_500_concurrency_32": "pending",
+      "performance_matrix_320_cells": "pending"
+    },
+    "scheme_two": {
+      "gpu_devices": "4-7",
+      "tensor_parallel_size": 4,
+      "scheduler_max_num_seqs": 16,
+      "stability_500_concurrency_16": "pending",
+      "performance_matrix_160_cells": "pending",
+      "theoretical_full_256k_concurrency": 11.8
+    },
+    "reason": "The precompiled images passed build-host audits, but this host has no NVIDIA driver or A100 GPUs. Model load, API, CUDA source tests, stability, and performance remain mandatory target-side gates."
+  }
+}
