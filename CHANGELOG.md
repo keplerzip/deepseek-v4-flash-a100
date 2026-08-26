@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026.08.26-r2
+
+- 方案收敛为 8×A100/TP8/C16：target 与 DSpark greedy k=7；
+- 单 engine 公布四个 256K/1M、OpenAI/Claude 名称，并新增真实 per-alias context gate；
+- 引擎统一开启 1,048,576 上下文，模型权重继续使用目标机原目录；
+- 合入 13 个 DSV4、DSpark、hybrid prefix cache、CUDA graph、tokenizer 和 KV 容量修复；
+- 使用 `MAX_JOBS=8`、`NVCC_THREADS=1` 完整重编译 SM80 镜像，目标 Ubuntu 22.04
+  仅加载镜像，不编译或联网；
+- 保留宿主 loopback + Docker bridge gateway，继续禁止 LAN 发布；
+- 新增 60 格 C16 长上下文矩阵、cache legacy/0/32768 门禁、DSpark k=1/3/5/7
+  筛选、四名称/Claude API 验收与 24 小时 soak；
+- Prefix cache 候选必须逐格保持 legacy 命中率在 1pp 内，报告空值不伪装为 0；
+- 报告服务器改为幂等，已运行时返回现有 URL。
+
 ## 2026.08.20-r1 — 2026-08-24 source publication
 
 - 升级固定 base 到 `haosdent/vllm@12810046c799cbe874967e19b1c0fa134ab7b209`；

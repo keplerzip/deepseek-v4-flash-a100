@@ -3,5 +3,4 @@ set -euo pipefail
 
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 export DSV4_SCHEME=one
-"$ROOT_DIR/r1/scripts/load_images.sh"
-exec "$ROOT_DIR/r1/scripts/serve_report.sh"
+exec "$ROOT_DIR/r2/scripts/serve_report.sh"

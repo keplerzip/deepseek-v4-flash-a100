@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
-export DSV4_SCHEME=two
-exec "$ROOT_DIR/r2/scripts/serve_report.sh"
+exec "$ROOT_DIR/r2/scripts/cache_profile_gate.sh" "$@"

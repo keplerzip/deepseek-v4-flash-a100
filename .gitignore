@@ -57,6 +57,15 @@
 !/r1/reports/qa/chart-map.json
 !/r1/reports/data/*.csv
 
+# DeepSeek V4 A100 R2 generated/offline-only payloads.
+/r2/config/secrets.env
+/r2/images/*
+!/r2/images/README.md
+/r2/results/*
+!/r2/results/README.md
+/r2/source/*
+!/r2/source/README.md
+
 # Language/tool caches
 **/__pycache__/
 *.py[cod]

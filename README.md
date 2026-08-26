@@ -1,110 +1,87 @@
 # deepseek-v4-flash-a100
 
-DeepSeek-V4-Flash-0731 在 NVIDIA A100 上的离线 vLLM 部署、测试与运维项目。
+DeepSeek-V4-Flash-0731 在 8×A100-SXM4-80GB 上的离线 vLLM 部署、缓存与
+DSpark 验证项目。当前 `main` 对应 **2026.08.26-r2**；R1 与更早现场版本仍完整
+保留在仓库历史和 `r1/` 中，但根目录入口已经切换到 R2。
 
-当前 `main` 对应 **2026.08.20-r1**。这一版从早期 `f8ea5bb` 现场版本升级到
-`haosdent/vllm@12810046c799cbe874967e19b1c0fa134ab7b209`，提供两个互斥的
-target-only 方案：8×A100 / TP8 和 4×A100 / TP4。两者都固定 256K 上下文，
-不启用 speculative decoding、DSpark 或 MTP。
+## R2 结论先行
 
-## R1 更新摘要
+- 只保留 8 卡 / TP8，服务调度上限统一为 `max-num-seqs=16`；
+- 方案一是 target，方案二是官方推荐的 DSpark greedy k=7；
+- 一套权重、一个进程和一个 KV 池同时提供四个名称：
+  `deepseek-v4-flash`、`deepseek-v4-flash[1M]`、
+  `deepseek-v4-flash-claude`、`deepseek-v4-flash-claude[1M]`；
+- 引擎物理上限为 1,048,576 token，不带 `[1M]` 的两个名称由服务端真实限制为
+  262,144 token，不会加载四份模型；
+- API 只发布到宿主回环和 Docker 默认 bridge gateway，同机容器可访问，局域网
+  其他机器不可直接访问；
+- Prefix cache 默认采用当前上游 `retention=0` 策略，但必须与 legacy、32768
+  在同口径门禁中比较，命中率回退超过 1 个百分点即拒绝；
+- 完整性能矩阵为 5 个输入长度 × 3 个输出长度 × 4 个命中率，共 60 格，每格 C16；
+- 另有 DSpark k=1/3/5/7 的 9 格筛选，以及 24 小时稳定性门禁；
+- vLLM/CUDA 产物全部在构建机以 `MAX_JOBS=8`、`NVCC_THREADS=1` 编译为 SM80
+  镜像。Ubuntu 22.04 目标机只需
+  `sudo -n docker`，不联网、不编译、不安装 Python 依赖。
 
-- 新增 8 卡方案一（GPU 0–7、TP8、`max-num-seqs=32`）和 4 卡方案二
-  （GPU 4–7、TP4、`max-num-seqs=16`）；
-- API 只发布到宿主机 loopback 与 Docker 默认桥接网关，不向局域网开放；
-- 固化 DeepSeek V4/V3.2 tokenizer、parser、post-load 与 Claude Code 请求转换补丁；
-- 增加 500 请求稳定性门禁，以及 320 格 / 160 格可续跑性能矩阵；
-- 增加可自包含打开的 HTML 报告、结构化 artifact 和失败证据收集；
-- 目标机只校验并加载预编译镜像，不编译、不下载依赖，也不修改 NVIDIA Driver；
-- 可识别并安全停止本项目最早版容器，但不会删除旧容器、镜像、目录或运行证据。
-
-完整设计与兼容边界见 [R1 项目说明](r1/README.md)、
-[部署说明](r1/docs/DEPLOYMENT.md) 和 [项目约束](r1/docs/PROJECT-SPEC.md)。
-
-## GitHub 公开范围
-
-本仓库仍是 **source-only** 发行，只公开部署代码、配置模板、测试、文档、
-固定版本清单、脱敏验证材料和八个经审计的 vLLM overlay 文件。以下内容不会进入 Git：
-
-- DeepSeek 模型权重及 `encoding/`、`inference/` 辅助文件；
-- 预编译 Docker 镜像和 `r1/images/dsv4-a100-r1-images.tar`；
-- 固定 base 源码压缩包、pytest wheelhouse 与其他构建产物；
-- `r1/config/secrets.env`、机器配置、运行日志、PID、锁和原始现场结果。
-
-因此，**仅克隆 GitHub 仓库不能直接完成断网部署**。完整离线交付包会另外包含
-校验过的三张 Docker 镜像、固定源码快照与测试 wheels；其使用入口见
-[START-HERE.md](START-HERE.md)。公开仓库保留对应 checksum 和 manifest，便于核对
-外部取得的 artifact 是否与本版本一致。
-
-## 完整离线包的日常入口
-
-在已经取得并解压完整离线包的目标机上：
+## 完整离线包入口
 
 ```bash
-./start_one.sh        # 方案一：8×A100 / TP8
-./start_two.sh        # 方案二：4×A100 / TP4
+./start_one.sh                 # 方案一：target / TP8 / C16
+./start_two.sh                 # 方案二：DSpark k=7 / TP8 / C16
 ./status_one.sh
 ./status_two.sh
 ./stop.sh
+
+./run-tests.sh                 # 静态包契约 + API/四名称/Claude/cache 验收
+./benchmark_one.sh             # target 完整 60 格
+./benchmark_two.sh             # DSpark k=7 完整 60 格
+./benchmark_cache_profiles.sh  # legacy / 0 / 32768 缓存策略门禁
+./benchmark_dspark_k.sh        # k=1/3/5/7 分阶段筛选
+./report_one.sh                # 幂等启动 target 报告服务器
+./report_two.sh                # 幂等启动 DSpark 报告服务器
 ```
 
-两种方案都监听宿主机 `http://127.0.0.1:8005/v1`。同机 Docker 容器在加入
-`host.docker.internal:host-gateway` 后使用
-`http://host.docker.internal:8005/v1`。两种方案共享端口且 GPU 重叠，不能同时运行。
-
-完整验收与性能矩阵：
-
-```bash
-./run-tests.sh
-DSV4_SCHEME=two ./run-tests.sh
-./benchmark_one.sh
-./benchmark_two.sh
-```
-
-如需 API key，只在目标机从模板生成未跟踪文件：
-
-```bash
-cp r1/config/secrets.env.example r1/config/secrets.env
-```
-
-## 目录结构
+模型仍使用目标机原目录，不进入交付包：
 
 ```text
-r1/          R1 配置、构建/运行脚本、测试、manifest、报告和文档
-tests/       R1 门禁使用的上游测试文件
-vllm/        八个经审计的 R1 overlay 源文件
-*.sh         双方案启动、状态、停止、benchmark 与报告入口
-target-only/ 早期 f8ea5bb 生产方案（保留用于升级与审计）
-dspark/      早期 f8ea5bb 实验方案（不属于 R1 生产路径）
-common/      早期 source-only 构建清单与许可证材料
-docs/        早期版本文档与迁移背景
+/ai/models/deepseek-v4-flash-0731-modelscope
 ```
 
-R1 是独立交付，不会覆盖旧目录。Git 历史完整保留了 1.4.0 及更早版本。
+宿主机 API 是 `http://127.0.0.1:8005/v1`。同机 Docker 客户端加入
+`--add-host host.docker.internal:host-gateway` 后使用
+`http://host.docker.internal:8005/v1`。服务容器内虽监听 `0.0.0.0`，宿主机绝不
+发布 `0.0.0.0:8005`，因此不会把 API 暴露给整个局域网。
 
-## 固定版本与验证状态
+## GitHub 与完整离线包的区别
+
+GitHub 是 source-only 视图，包含脚本、测试、文档、manifest 和审计记录，不包含：
+
+- 模型权重；
+- `r2/images/dsv4-a100-r2-image.tar`；
+- 自动生成的完整 vLLM 源码快照；
+- 目标机日志、缓存、性能 CSV、API key 或其他秘密。
+
+所以仅克隆 GitHub 不能在断网目标机直接部署。构建侧执行
+`r2/scripts/package_offline_release.sh` 后生成的单一压缩包才包含预编译运行环境和
+精确源码快照。
+
+## 版本与证据
 
 | 项目 | 固定值 |
 |---|---|
-| Release | `2026.08.20-r1` |
-| vLLM fork | `https://github.com/haosdent/vllm.git` |
-| Base commit | `12810046c799cbe874967e19b1c0fa134ab7b209` |
+| Release | `2026.08.26-r2` |
+| vLLM source | `9667db18a628ba4505ad19529df84e09b250b1f3` |
 | CUDA 架构 | SM80 / A100 |
-| 最大上下文 | 262,144 tokens |
+| GPU / TP | 8 / 8 |
+| Engine context | 1,048,576 |
+| Scheduler | C16 |
 | 服务端口 | 8005 |
-| 目标 Driver | 580.159.04 或兼容 CUDA 13.0 Update 3 的更高版本 |
+| 默认缓存 profile | `zero`（需目标机 A/B/C 与 24h 门禁） |
 
-预编译镜像、源码测试镜像、包契约、双方案脚本和报告布局已在构建侧验证。
-仓库内初始性能报告明确显示方案一 `0/320`、方案二 `0/160`，因为构建机没有 A100；
-在目标机跑完矩阵后才会生成真实数据，不能把空报告当作性能结论。
+源代码选择见 [上游审计](r2/docs/UPSTREAM-AUDIT.md)，部署见
+[R2 说明](r2/README.md)，本机构建证据见
+[build-validation.json](r2/manifests/build-validation.json)，测试口径见
+[测试文档](r2/docs/TESTING.md)。构建机没有
+A100，因此仓库不预填任何性能数字；真实结论只能来自目标机生成的 CSV/JSON/HTML。
 
-详细锁定信息见 [source-lock.json](r1/manifests/source-lock.json)，已完成与未完成的
-验证范围见 [validation-summary.json](r1/manifests/validation-summary.json)。
-
-## 安全与许可证
-
-所有停止与回滚操作都要求容器名称和 ownership labels 同时匹配；不会删除模型、
-其他服务或未知镜像。API 默认不暴露到局域网。
-
-本项目采用 Apache-2.0 许可证。DeepSeek 模型、vLLM fork、PyTorch、CUDA 及其他
-依赖仍受各自许可证与使用条款约束，详见 [THIRD_PARTY.md](THIRD_PARTY.md)。
+本项目采用 Apache-2.0。模型和各依赖仍受各自许可证与条款约束。

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "contexts": [200000, 400000, 600000, 800000, 1000000],
+  "outputs": [10000, 20000, 30000],
+  "cache_hit_targets": [0.80, 0.85, 0.90, 0.95],
+  "concurrency": 16,
+  "cells_per_scheme": 60,
+  "measured_requests_per_scheme": 960,
+  "workload": "code with Chinese comments",
+  "primary_kpis": ["ttft_ms_p95", "effective_uncached_prefill_tps", "decode_tps_aggregate"],
+  "drivers": ["cache_hit_actual_p50", "itl_ms_p95", "dspark_acceptance_rate"],
+  "guardrails": {"success": "16/16", "cache_shortfall_max_pp": 1.0, "exact_output_length": true, "raw_parser_marker": false}
+}

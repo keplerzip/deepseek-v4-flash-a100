@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "validated_at": "2026-08-26T15:45:00+08:00",
+  "image": {
+    "tag": "dsv4-a100:20260826-r2-sm80",
+    "id": "sha256:5d420df326cf1455ee84ebe988a1c056823f9f800c61bb21eec04d3c4510bfd8",
+    "size_bytes": 8173007954,
+    "source_revision": "9667db18a628ba4505ad19529df84e09b250b1f3",
+    "build_max_jobs": 8,
+    "build_nvcc_threads": 1,
+    "cuda_arch": "8.0"
+  },
+  "runtime": {
+    "vllm": "0.1.dev40+g9667db18a.d20260826",
+    "torch": "2.13.0+cu130",
+    "torch_cuda": "13.0",
+    "native_extension": "/usr/local/lib/python3.12/dist-packages/vllm/_C_stable_libtorch.abi3.so",
+    "native_extension_sm80_cubin_entries": 55
+  },
+  "checks": {
+    "sm80_compile_and_link": "pass",
+    "image_provenance_labels": "pass",
+    "package_contract_tests": 11,
+    "shell_syntax_scripts": 20,
+    "benchmark_matrix_cells": 60,
+    "docker_internal_network_integration": "pass",
+    "report_server_idempotency_integration": "pass"
+  },
+  "not_run_on_build_host": [
+    "8xA100 engine startup",
+    "model weight loading",
+    "GPU API acceptance",
+    "performance matrix",
+    "24-hour stability soak"
+  ],
+  "reason": "The build host has no active NVIDIA GPU; GPU-dependent gates run on the Ubuntu 22.04 target."
+}

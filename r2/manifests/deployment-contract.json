@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "release": "2026.08.26-r2",
+  "target_os": "Ubuntu 22.04",
+  "privileged_interface": "sudo -n docker",
+  "gpu": {"count": 8, "model": "A100-SXM4-80GB", "devices": "0,1,2,3,4,5,6,7"},
+  "engine": {"tensor_parallel_size": 8, "max_num_seqs": 16, "max_model_len": 1048576, "kv_cache_dtype": "fp8", "block_size": 256},
+  "schemes": {
+    "target": {"speculative_decoding": false},
+    "dspark": {"method": "dspark", "num_speculative_tokens": 7, "draft_sample_method": "greedy"}
+  },
+  "served_models": {
+    "deepseek-v4-flash": 262144,
+    "deepseek-v4-flash[1M]": 1048576,
+    "deepseek-v4-flash-claude": 262144,
+    "deepseek-v4-flash-claude[1M]": 1048576
+  },
+  "network": {"container_bind": "0.0.0.0:8005", "host_loopback": "127.0.0.1:8005", "docker_bridge_gateway": true, "host_lan_publish": false}
+}
