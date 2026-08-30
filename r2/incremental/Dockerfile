@@ -1,4 +1,4 @@
-ARG BASE_IMAGE
+ARG BASE_IMAGE=dsv4-a100:20260826-r2-sm80
 FROM ${BASE_IMAGE}
 
 # The full R2.1 wheel differs from R2 in exactly two installed vLLM files.
