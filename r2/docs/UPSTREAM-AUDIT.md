@@ -1,8 +1,8 @@
-# 2026-08-26 上游更新审计与 R2.2 兼容修复
+# 2026-08-26 上游更新审计与 R2.3 兼容修复
 
 审计基于 `vllm-project/vllm` 当日 main，针对 DeepSeek-V4-Flash-0731、A100 SM80、
 TP8、1M、prefix cache 和 DSpark。R2 source 锁定为
-`6683c3dc41936a0a5b15d73db056388abddbf8a8`。
+`cf7898691b58820a8ba98e018f612d4a0c2f69f0`。
 
 ## 已纳入
 
@@ -36,6 +36,12 @@ R2.2 继续修复同一 #51538 回移带入的第二处依赖错位：上游提�
 `get_uniform_decode_token_count`，但该名称在 runner 内没有任何调用。R2.2 删除这个
 悬空导入，不补入无用的新逻辑；同时将 Worker 启动链的本地符号契约与目标 GPU 上的
 真实 Worker import 加入门禁。
+
+R2.3 修复四 alias 补丁引入的 Responses 回归。R1 稳定镜像中的默认
+`SimpleContext` 不保存请求对象；R2 原补丁却在生成器内部读取
+`context.request.model`，因此 Codex 的 SSE 响应会在 HTTP 200 后中断。R2.3 保持 R1
+生成循环与 Responses 事件文件不变，只把 `_create_responses` 已解析的 alias 上限作为
+显式参数传入生成器，并将完整 `response.completed` 事件纳入在线验收。
 
 ## 配置接纳、未直接 cherry-pick
 

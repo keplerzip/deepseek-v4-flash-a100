@@ -169,6 +169,53 @@ def backend_bases(path: Path) -> set[str]:
     return {base.id for base in backend.bases if isinstance(base, ast.Name)}
 
 
+def verify_responses_limit_flow(path: Path) -> None:
+    tree = ast.parse(path.read_text(), filename=str(path))
+    serving_class = next(
+        node
+        for node in tree.body
+        if isinstance(node, ast.ClassDef) and node.name == "OpenAIServingResponses"
+    )
+    methods = {
+        node.name: node
+        for node in serving_class.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    generate = methods["_generate_with_builtin_tools"]
+    generate_args = {argument.arg for argument in generate.args.args}
+    if "max_model_len" not in generate_args:
+        raise RuntimeError("Responses generation does not accept an explicit model limit")
+    if any(
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "_get_max_model_len"
+        for node in ast.walk(generate)
+    ):
+        raise RuntimeError("Responses generation re-resolves a model limit from context")
+
+    create = methods["_create_responses"]
+    generate_calls = [
+        node
+        for node in ast.walk(create)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "_generate_with_builtin_tools"
+    ]
+    if len(generate_calls) != 1:
+        raise RuntimeError(
+            f"expected one Responses generation call, found {len(generate_calls)}"
+        )
+    max_len_keywords = [
+        keyword.value
+        for keyword in generate_calls[0].keywords
+        if keyword.arg == "max_model_len"
+    ]
+    if len(max_len_keywords) != 1 or not isinstance(max_len_keywords[0], ast.Name):
+        raise RuntimeError("Responses generation is not passed the resolved model limit")
+    if max_len_keywords[0].id != "max_model_len":
+        raise RuntimeError("Responses generation receives an unexpected limit value")
+
+
 def main() -> None:
     root = find_vllm_root()
     sparse_mla = root / "models/deepseek_v4/sparse_mla.py"
@@ -184,6 +231,7 @@ def main() -> None:
     startup_missing = audit_startup_imports(root)
     if startup_missing:
         raise RuntimeError(f"undefined GPU worker startup imports: {startup_missing}")
+    verify_responses_limit_flow(root / "entrypoints/openai/responses/serving.py")
     print(
         json.dumps(
             {
@@ -193,6 +241,7 @@ def main() -> None:
                 "backend_bases": sorted(bases),
                 "startup_import_contracts": "pass",
                 "startup_modules": list(STARTUP_MODULES),
+                "responses_limit_flow": "pass",
             },
             sort_keys=True,
         )

@@ -37,7 +37,7 @@ class PackageContractTest(unittest.TestCase):
         common_path = R2 / "config/common.env"
         release_path = R2 / "config/release.env"
         expected_release = {
-            "R2_RELEASE": "2026.08.30-r2.2",
+            "R2_RELEASE": "2026.08.30-r2.3",
             "MAX_MODEL_LEN": "1048576",
             "SHORT_MODEL_MAX_LEN": "262144",
             "MAX_NUM_SEQS": "16",
@@ -236,9 +236,9 @@ class PackageContractTest(unittest.TestCase):
             "INCREMENTAL_BASE_IMAGE_ID": (
                 "sha256:5d420df326cf1455ee84ebe988a1c056823f9f800c61bb21eec04d3c4510bfd8"
             ),
-            "INCREMENTAL_RESULT_IMAGE": "dsv4-a100:20260830-r2.2-sm80",
+            "INCREMENTAL_RESULT_IMAGE": "dsv4-a100:20260830-r2.3-sm80",
             "INCREMENTAL_RESULT_SOURCE_COMMIT": (
-                "6683c3dc41936a0a5b15d73db056388abddbf8a8"
+                "cf7898691b58820a8ba98e018f612d4a0c2f69f0"
             ),
         }
         self.assertEqual(
@@ -254,7 +254,22 @@ class PackageContractTest(unittest.TestCase):
         self.assertNotIn("pip install", dockerfile)
         packager = (R2 / "scripts/package_incremental_release.sh").read_text()
         self.assertNotIn("image save", packager)
-        self.assertIn("R2-to-R2.2 installed vLLM diff", packager)
+        self.assertIn("R2-to-R2.3 installed vLLM diff", packager)
+        self.assertIn(
+            "vllm/entrypoints/openai/responses/serving.py", packager
+        )
+        self.assertIn(
+            "INCREMENTAL_RESULT_RESPONSES_SERVING_SHA256", installer
+        )
+
+    def test_codex_responses_stream_is_consumed_to_terminal_event(self):
+        api_contract = (R2 / "tests/api_contract.py").read_text()
+        self.assertIn('"/v1/responses"', api_contract)
+        self.assertIn('"stream": True', api_contract)
+        self.assertIn('"response.completed" not in event_types', api_contract)
+        self.assertIn('"tool_choice": "none"', api_contract)
+        acceptance = (R2 / "scripts/run_acceptance.sh").read_text()
+        self.assertIn("acceptance-server-delta.log", acceptance)
 
     def test_required_entrypoints_exist(self):
         for name in (

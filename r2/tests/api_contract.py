@@ -62,6 +62,60 @@ class Client:
             raise RuntimeError(f"expected JSON object from {path}")
         return value
 
+    def sse(
+        self,
+        path: str,
+        payload: dict[str, Any],
+        extra_headers: dict[str, str] | None = None,
+    ) -> list[dict[str, Any]]:
+        headers = {
+            "Accept": "text/event-stream",
+            "Content-Type": "application/json",
+        }
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
+            headers["x-api-key"] = self.api_key
+        if extra_headers:
+            headers.update(extra_headers)
+        request = urllib.request.Request(
+            self.origin + path,
+            data=json.dumps(payload).encode(),
+            headers=headers,
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=self.timeout) as response:
+                raw = response.read().decode(errors="replace")
+        except urllib.error.HTTPError as exc:
+            detail = exc.read(8192).decode(errors="replace")
+            raise RuntimeError(f"HTTP {exc.code} for {path}: {detail}") from exc
+        except (OSError, TimeoutError) as exc:
+            raise RuntimeError(f"stream transport failed for {path}: {exc}") from exc
+
+        events: list[dict[str, Any]] = []
+        normalized = raw.replace("\r\n", "\n")
+        for block in normalized.split("\n\n"):
+            data_lines = [
+                line.removeprefix("data:").lstrip()
+                for line in block.splitlines()
+                if line.startswith("data:")
+            ]
+            if not data_lines:
+                continue
+            data = "\n".join(data_lines)
+            if data == "[DONE]":
+                continue
+            try:
+                event = json.loads(data)
+            except json.JSONDecodeError as exc:
+                raise RuntimeError(f"invalid SSE JSON from {path}: {data[:512]}") from exc
+            if not isinstance(event, dict):
+                raise RuntimeError(f"expected SSE object from {path}: {event!r}")
+            events.append(event)
+        if not events:
+            raise RuntimeError(f"empty SSE stream from {path}: {raw[:512]}")
+        return events
+
 
 def openai_chat(client: Client, model: str) -> dict[str, Any]:
     response = client.json(
@@ -93,6 +147,47 @@ def anthropic_chat(client: Client, model: str) -> dict[str, Any]:
     if response.get("type") != "message" or not response.get("content"):
         raise RuntimeError(f"Anthropic messages returned an invalid response for {model}")
     return response
+
+
+def codex_responses_stream(client: Client, model: str) -> int:
+    events = client.sse(
+        "/v1/responses",
+        {
+            "model": model,
+            "input": "只输出：服务正常。",
+            "tools": [
+                {
+                    "type": "function",
+                    "name": "record_status",
+                    "description": "记录服务状态；本次请求不调用。",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {"status": {"type": "string"}},
+                        "required": ["status"],
+                        "additionalProperties": False,
+                    },
+                }
+            ],
+            "tool_choice": "none",
+            "temperature": 0,
+            "max_output_tokens": 64,
+            "stream": True,
+        },
+    )
+    event_types = [event.get("type") for event in events]
+    failed = [
+        event_type
+        for event_type in event_types
+        if event_type in {"error", "response.failed"}
+    ]
+    if failed:
+        raise RuntimeError(f"Responses stream failed for {model}: {failed}")
+    if "response.completed" not in event_types:
+        raise RuntimeError(
+            f"Responses stream ended without response.completed for {model}: "
+            f"{event_types}"
+        )
+    return len(events)
 
 
 def cache_request(client: Client, content: str, cache_salt: str) -> dict[str, Any]:
@@ -194,6 +289,10 @@ def main() -> int:
 
     openai_chat(client, "deepseek-v4-flash")
     openai_chat(client, "deepseek-v4-flash[1M]")
+    responses_event_counts = {
+        model: codex_responses_stream(client, model)
+        for model in ("deepseek-v4-flash", "deepseek-v4-flash[1M]")
+    }
     anthropic_chat(client, "deepseek-v4-flash-claude")
     anthropic_chat(client, "deepseek-v4-flash-claude[1M]")
     rejected_prompt_tokens = verify_short_alias_rejects_oversized_prompt(client)
@@ -218,6 +317,7 @@ def main() -> int:
                 "status": "pass",
                 "models": observed,
                 "openai_aliases_tested": 2,
+                "responses_stream_aliases_tested": responses_event_counts,
                 "anthropic_aliases_tested": 2,
                 "short_alias_limit_probe": {
                     "prompt_tokens": rejected_prompt_tokens,

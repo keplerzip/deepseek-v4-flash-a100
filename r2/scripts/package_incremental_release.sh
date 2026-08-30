@@ -14,23 +14,24 @@ done
 
 changed_vllm_files=(
   vllm/_version.py
+  vllm/entrypoints/openai/responses/serving.py
   vllm/models/deepseek_v4/nvidia/flashinfer_sparse.py
   vllm/v1/worker/gpu/model_runner.py
 )
 
 [[ "$INCREMENTAL_RESULT_IMAGE" == "$R2_IMAGE" ]] || die \
-  'incremental result tag must equal the R2.2 release image tag'
+  'incremental result tag must equal the R2.3 release image tag'
 [[ "$(docker_cmd image inspect --format '{{.Id}}' "$INCREMENTAL_BASE_IMAGE")" == \
     "$INCREMENTAL_BASE_IMAGE_ID" ]] || die 'exact R2 base image is unavailable'
 [[ "$(docker_cmd image inspect --format '{{.Id}}' "$R2_IMAGE")" == \
-    'sha256:333503e39c788fb72cda4bbffc71deb3ab5338c08751c4c220a3be6bd24bda0a' ]] || die \
-  'exact full R2.2 image is unavailable for overlay extraction'
+    'sha256:e12d476f5211ce27d50a0d8cf1fbb69f131def4cb1152525426a0e8d98371d72' ]] || die \
+  'exact full R2.3 image is unavailable for overlay extraction'
 git -C "$ROOT_DIR" diff --quiet
 git -C "$ROOT_DIR" diff --cached --quiet
 [[ -z "$(git -C "$ROOT_DIR" ls-files --others --exclude-standard)" ]] || die \
   'offline delivery repository has untracked files'
 
-project_name=${INCREMENTAL_PROJECT_NAME:-deepseek-v4-flash-a100-r2.2-incremental-from-r2-20260830}
+project_name=${INCREMENTAL_PROJECT_NAME:-deepseek-v4-flash-a100-r2.3-incremental-from-r2-20260830}
 output=${1:-$(dirname -- "$ROOT_DIR")/$project_name.tar.gz}
 output_dir=$(cd -- "$(dirname -- "$output")" && pwd)
 output="$output_dir/$(basename -- "$output")"
@@ -71,7 +72,7 @@ expected_diff=$(printf 'CHANGED %s\n' "${changed_vllm_files[@]}" | sort)
 [[ "$observed_diff" == "$expected_diff" ]] || {
   printf 'expected installed vLLM diff:\n%s\nobserved diff:\n%s\n' \
     "$expected_diff" "$observed_diff" >&2
-  die 'R2-to-R2.2 installed vLLM diff is not fully represented by the overlay'
+  die 'R2-to-R2.3 installed vLLM diff is not fully represented by the overlay'
 }
 
 head=$(git -C "$ROOT_DIR" rev-parse HEAD)

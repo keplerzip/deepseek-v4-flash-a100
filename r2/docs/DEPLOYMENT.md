@@ -1,4 +1,4 @@
-# R2.2 部署说明
+# R2.3 部署说明
 
 ## 前置条件
 
@@ -13,7 +13,7 @@
 解压完整离线包后：
 
 ```bash
-sha256sum -c ../deepseek-v4-flash-a100-r2.2-offline-20260830.tar.gz.sha256
+sha256sum -c ../deepseek-v4-flash-a100-r2.3-offline-20260830.tar.gz.sha256
 ./start_one.sh
 ```
 
@@ -24,7 +24,7 @@ sha256sum -c ../deepseek-v4-flash-a100-r2.2-offline-20260830.tar.gz.sha256
 ./update-from-r2.sh one
 ```
 
-命令会精确校验旧镜像 ID，在 Docker `--network none` 下创建 R2.2 覆盖层并启动
+命令会精确校验旧镜像 ID，在 Docker `--network none` 下创建 R2.3 覆盖层并启动
 target。它不运行 pip、不编译 CUDA；旧镜像不匹配时会停止，不能降级为模糊修补。
 
 启动器按顺序校验镜像 tar、镜像 ID、source revision、GPU、Driver、模型结构、

@@ -10,6 +10,7 @@ else
   "$R2_DIR/scripts/start.sh"
 fi
 mkdir -p "$RESULT_DIR/acceptance"
+server_log_lines_before=$(docker_cmd logs "$CONTAINER_NAME" 2>&1 | wc -l)
 args=(
   --rm --network bridge
   --add-host host.docker.internal:host-gateway
@@ -22,8 +23,11 @@ docker_cmd run "${args[@]}" "$R2_IMAGE" /r2/tests/api_contract.py \
   >"$RESULT_DIR/acceptance/api-contract.json"
 docker_cmd logs --timestamps "$CONTAINER_NAME" \
   >"$LOG_DIR/acceptance-server.log" 2>&1 || true
+sed -n "$((server_log_lines_before + 1)),\$p" \
+  "$LOG_DIR/acceptance-server.log" \
+  >"$LOG_DIR/acceptance-server-delta.log"
 if grep -Eiq 'CUDA illegal memory|device-side assert|Traceback \(most recent call last\)|EngineCore.*died|OOM' \
-  "$LOG_DIR/acceptance-server.log"; then
-  die "fatal server signature found after acceptance; inspect $LOG_DIR/acceptance-server.log"
+  "$LOG_DIR/acceptance-server-delta.log"; then
+  die "fatal server signature found during acceptance; inspect $LOG_DIR/acceptance-server-delta.log"
 fi
 printf 'ACCEPTANCE=PASS\nevidence=%s\n' "$RESULT_DIR/acceptance/api-contract.json"

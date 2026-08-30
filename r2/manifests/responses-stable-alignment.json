@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "validated_at": "2026-08-30T19:00:17+08:00",
+  "stable_reference": {
+    "image": "dsv4-a100:1281004-r1-20260820",
+    "image_id": "sha256:4d7904dd75d90773bfc458eeda8e54d9b3a917bea31c050059d932e26f0013d2",
+    "source_revision": "12810046c799cbe874967e19b1c0fa134ab7b209",
+    "responses_serving_sha256": "d1757d295d8a0f7920933dcaa56a7eb43447e2f41d45a479c5b3f12e24ca1646"
+  },
+  "r2_3": {
+    "image": "dsv4-a100:20260830-r2.3-sm80",
+    "image_id": "sha256:e12d476f5211ce27d50a0d8cf1fbb69f131def4cb1152525426a0e8d98371d72",
+    "source_revision": "cf7898691b58820a8ba98e018f612d4a0c2f69f0",
+    "responses_serving_sha256": "4eb9c53d7dd7bd00a7497c6efa01e571a42286d4d69c375cca12d7be8bc8803b"
+  },
+  "byte_identical_responses_files": [
+    "__init__.py",
+    "context.py",
+    "harmony.py",
+    "protocol.py",
+    "streaming_events.py",
+    "utils.py"
+  ],
+  "intentional_serving_differences": [
+    "resolve the per-alias max_model_len once from request.model",
+    "validate the rendered prompt against that resolved limit",
+    "pass max_model_len explicitly into the unchanged generation loop"
+  ],
+  "forbidden_regression": "generation must not read request data from SimpleContext",
+  "verification": {
+    "r2_2_failure_reproduced": "pass",
+    "simple_context_regression_test": "pass",
+    "responses_serving_tests": {"passed": 22, "xfailed": 1},
+    "installed_ast_limit_flow_contract": "pass",
+    "target_required": "consume Codex-style SSE through response.completed on both OpenAI aliases"
+  }
+}

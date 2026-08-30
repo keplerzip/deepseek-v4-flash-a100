@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026.08.30-r2.3
+
+- 修复四 alias 上下文限制补丁在 OpenAI Responses API 中错误访问
+  `SimpleContext.request` 的回归；该错误会让 Codex 流在 HTTP 200 之后被 ASGI 异常截断；
+- 直接以 8 月 20 日稳定镜像 `12810046c799...` 的已安装 Responses 代码为行为基线：
+  Responses 目录其余文件保持逐字节一致，只将上层已解析的 alias 上限显式传入原生成循环；
+- 新增 Codex 风格 `/v1/responses` 工具声明 + SSE 验收，必须完整读取到
+  `response.completed`，不再把“仅收到 200”误判为成功；
+- 验收日志只扫描本轮新增区间，历史请求异常不会永久污染后续验收结果；
+- 增量更新继续严格基于目标机已有的 `2026.08.26-r2` 镜像，只覆盖四个实际变化
+  vLLM 文件与新 dist-info，目标机断网、无依赖安装、无 CUDA 编译。
+
 ## 2026.08.30-r2.2
 
 - 修复 #51538 回移后的第二处依赖错位：MRV2 `gpu/model_runner.py` 悬空导入当前
