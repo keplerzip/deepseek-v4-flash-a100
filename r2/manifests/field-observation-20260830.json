@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-08-30",
+  "release": "2026.08.30-r2.3",
+  "scheme": "dspark-k7",
+  "source": "target operator observation",
+  "engine_startup": {
+    "maximum_concurrency_context_tokens": 1048576,
+    "maximum_concurrency_x": 6.95
+  },
+  "performance": {
+    "observed_tps_min": 130,
+    "observed_tps_max": 200,
+    "unit": "tokens_per_second",
+    "qualification": "initial field range; exact request shape and normalized 60-cell benchmark are pending"
+  },
+  "api": {
+    "openai_responses": "observed responding normally after R2.3 update"
+  },
+  "interpretation": "The engine can hold about 6.95 simultaneous full 1M-token sequences by its startup KV-capacity estimate; shorter requests remain capped by max_num_seqs=16."
+}
