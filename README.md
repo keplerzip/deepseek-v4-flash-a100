@@ -23,9 +23,11 @@ DSpark 验证项目。当前发行版为 **2026.08.30-r2.3**；R1 与更早现�
   镜像。Ubuntu 22.04 目标机只需
   `sudo -n docker`，不联网、不编译、不安装 Python 依赖。
 
-R2.3 方案二目标机首轮现场观测：引擎日志给出完整 1,048,576-token 请求的 KV
-容量并发为 `6.95x`，实际调用速度约 `130–200 tokens/s`，Codex Responses 已恢复
-正常。该速度区间是现场初测，最终横向结论仍以固定请求形状的 60 格矩阵为准。
+R2.3 方案二（DSpark greedy k=7）已在目标机确认完整正确运行。现场实测
+decode TPS 典型为 `130–180 tokens/s`，观测到的最高值为 `355 tokens/s`；峰值
+不代表持续或聚合吞吐。引擎日志给出完整 1,048,576-token 请求的 KV 容量
+并发为 `6.95x`，Codex Responses 正常。详细横向结论仍以固定请求形状的
+60 格矩阵为准。
 
 ## 完整离线包入口
 
@@ -97,6 +99,7 @@ GitHub 是 source-only 视图，包含脚本、测试、文档、manifest 和审
 [R2 说明](r2/README.md)，本机构建证据见
 [build-validation.json](r2/manifests/build-validation.json)，测试口径见
 [测试文档](r2/docs/TESTING.md)。构建机没有
-A100，因此仓库不预填任何性能数字；真实结论只能来自目标机生成的 CSV/JSON/HTML。
+A100，因此构建阶段不预填性能数字。仓库中的性能记录均来自目标机现场
+实测；完整矩阵结论以目标机生成的 CSV/JSON/HTML 为准。
 
 本项目采用 Apache-2.0。模型和各依赖仍受各自许可证与条款约束。

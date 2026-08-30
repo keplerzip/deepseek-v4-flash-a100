@@ -14,6 +14,13 @@ R2.3 是从 R1 独立升级的 8×A100 离线交付。它在构建机以 `MAX_JO
 两个方案均公开四个 alias，共用一份权重和 KV cache。256K alias 的限制在 prompt
 渲染和 token 计数之后、请求进入 engine 之前执行；它不是前端文字约定。
 
+## R2.3 目标机实测
+
+方案二 DSpark greedy k=7 已确认完整正确运行。现场实测 decode TPS 典型为
+`130–180 tokens/s`，观测到的最高值为 `355 tokens/s`。最高值是现场峰值，
+不应解读为持续或 aggregate throughput。机器可读记录见
+[`field-observation-20260830.json`](manifests/field-observation-20260830.json)。
+
 ## Prefix cache
 
 默认 profile 是 `zero`，对应当前上游的 retention interval 0。以下 profile 均保留：

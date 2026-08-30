@@ -1,6 +1,7 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "observed_at": "2026-08-30",
+  "confirmed_at": "2026-08-31",
   "release": "2026.08.30-r2.3",
   "scheme": "dspark-k7",
   "source": "target operator observation",
@@ -9,10 +10,12 @@
     "maximum_concurrency_x": 6.95
   },
   "performance": {
-    "observed_tps_min": 130,
-    "observed_tps_max": 200,
+    "metric": "decode_tps",
+    "typical_tps_min": 130,
+    "typical_tps_max": 180,
+    "observed_peak_tps": 355,
     "unit": "tokens_per_second",
-    "qualification": "initial field range; exact request shape and normalized 60-cell benchmark are pending"
+    "qualification": "confirmed target field observation; peak is not sustained or aggregate throughput; normalized 60-cell benchmark remains the cross-configuration comparison source"
   },
   "api": {
     "openai_responses": "observed responding normally after R2.3 update"
