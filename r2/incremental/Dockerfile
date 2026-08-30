@@ -1,13 +1,12 @@
 ARG BASE_IMAGE=dsv4-a100:20260826-r2-sm80
 FROM ${BASE_IMAGE}
 
-# The full R2.1 wheel differs from R2 in exactly two installed vLLM files.
-# Replace those files and its small dist-info directory without downloading or
+# The full R2.2 wheel differs from the 2026-08-26 R2 image in exactly three
+# installed vLLM files. Replace the verified overlay and dist-info directory without
 # compiling anything on the target machine.
 RUN python3 -c "from pathlib import Path; import shutil; p=Path('/usr/local/lib/python3.12/dist-packages/vllm-0.1.dev40+g9667db18a.d20260826.dist-info'); assert p.is_dir(), p; shutil.rmtree(p)"
-COPY overlay/vllm/_version.py /usr/local/lib/python3.12/dist-packages/vllm/_version.py
-COPY overlay/vllm/models/deepseek_v4/nvidia/flashinfer_sparse.py /usr/local/lib/python3.12/dist-packages/vllm/models/deepseek_v4/nvidia/flashinfer_sparse.py
-COPY overlay/vllm-0.1.dev41+gbc51bfa79.d20260830.dist-info/ /usr/local/lib/python3.12/dist-packages/vllm-0.1.dev41+gbc51bfa79.d20260830.dist-info/
+COPY overlay/vllm/ /usr/local/lib/python3.12/dist-packages/vllm/
+COPY overlay/vllm-0.1.dev42+g6683c3dc4.d20260830.dist-info/ /usr/local/lib/python3.12/dist-packages/vllm-0.1.dev42+g6683c3dc4.d20260830.dist-info/
 
 ARG RESULT_SOURCE_COMMIT
 ARG RELEASE

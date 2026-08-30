@@ -17,11 +17,11 @@ require_command sha256sum
 init_docker
 
 [[ "$INCREMENTAL_RESULT_IMAGE" == "$R2_IMAGE" ]] || die \
-  'incremental result image disagrees with the R2.1 release contract'
+  'incremental result image disagrees with the R2.2 release contract'
 [[ "$INCREMENTAL_RESULT_SOURCE_COMMIT" == "$R2_SOURCE_COMMIT" ]] || die \
-  'incremental source revision disagrees with the R2.1 release contract'
+  'incremental source revision disagrees with the R2.2 release contract'
 [[ "$INCREMENTAL_RELEASE" == "$R2_RELEASE" ]] || die \
-  'incremental release identity disagrees with the R2.1 release contract'
+  'incremental release identity disagrees with the R2.2 release contract'
 
 (cd -- "$INCREMENTAL_DIR" && sha256sum -c payload.sha256 >/dev/null) || die \
   'incremental payload checksum verification failed'
@@ -58,12 +58,12 @@ if docker_cmd image inspect "$result_image" >/dev/null 2>&1; then
     log "exact incremental image is already present: $result_image"
   elif [[ "$result_image" == "$INCREMENTAL_RESULT_IMAGE" && \
           "$observed_revision" == "$INCREMENTAL_RESULT_SOURCE_COMMIT" ]]; then
-    log "an exact full R2.1 image is already present: $result_image"
+    log "an exact full R2.2 image is already present: $result_image"
   else
     die "incremental result image tag is occupied by different content: $result_image"
   fi
 else
-  log "building the R2.1 overlay from the verified R2 base (offline, no compilation)"
+  log "building the R2.2 overlay from the verified 2026-08-26 R2 base (offline, no compilation)"
   DOCKER_BUILDKIT=1 docker_cmd build \
     --network none \
     --pull=false \
@@ -83,15 +83,18 @@ fi
 [[ "$(docker_cmd image inspect --format '{{index .Config.Labels "com.deepseek.cuda.arch"}}' "$result_image")" == 8.0 ]] || die \
   'incremental image CUDA architecture label mismatch'
 
-read -r result_flashinfer result_version < <(docker_cmd run --rm --network none \
+read -r result_flashinfer result_model_runner result_version < <(docker_cmd run --rm --network none \
   --entrypoint python3 "$result_image" -c '
 from hashlib import sha256
 from pathlib import Path
 root=Path("/usr/local/lib/python3.12/dist-packages/vllm")
-print(sha256((root/"models/deepseek_v4/nvidia/flashinfer_sparse.py").read_bytes()).hexdigest(), sha256((root/"_version.py").read_bytes()).hexdigest())
+paths=("models/deepseek_v4/nvidia/flashinfer_sparse.py", "v1/worker/gpu/model_runner.py", "_version.py")
+print(*(sha256((root/path).read_bytes()).hexdigest() for path in paths))
 ')
 [[ "$result_flashinfer" == "$INCREMENTAL_RESULT_FLASHINFER_SHA256" ]] || die \
   'incremental result backend checksum mismatch'
+[[ "$result_model_runner" == "$INCREMENTAL_RESULT_MODEL_RUNNER_SHA256" ]] || die \
+  'incremental result GPU model runner checksum mismatch'
 [[ "$result_version" == "$INCREMENTAL_RESULT_VERSION_SHA256" ]] || die \
   'incremental result version checksum mismatch'
 docker_cmd run --rm --network none \
@@ -101,7 +104,7 @@ docker_cmd run --rm --network none \
   'incremental image failed the DeepSeek V4 source contract'
 observed_version=$(docker_cmd run --rm --network none --entrypoint python3 \
   "$result_image" -c 'import importlib.metadata, vllm; assert importlib.metadata.version("vllm") == vllm.__version__; print(vllm.__version__)')
-[[ "$observed_version" == 0.1.dev41+gbc51bfa79.d20260830 ]] || die \
+[[ "$observed_version" == 0.1.dev42+g6683c3dc4.d20260830 ]] || die \
   "incremental vLLM version mismatch: $observed_version"
 
 printf 'INCREMENTAL_IMAGE=PASS\nbase=%s\nbase_id=%s\nimage=%s\nimage_id=%s\nvllm=%s\nnetwork=none\ncompilation=none\n' \

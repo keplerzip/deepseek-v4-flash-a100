@@ -37,7 +37,7 @@ class PackageContractTest(unittest.TestCase):
         common_path = R2 / "config/common.env"
         release_path = R2 / "config/release.env"
         expected_release = {
-            "R2_RELEASE": "2026.08.30-r2.1",
+            "R2_RELEASE": "2026.08.30-r2.2",
             "MAX_MODEL_LEN": "1048576",
             "SHORT_MODEL_MAX_LEN": "262144",
             "MAX_NUM_SEQS": "16",
@@ -97,6 +97,7 @@ class PackageContractTest(unittest.TestCase):
         preflight = (R2 / "scripts/preflight.sh").read_text()
         self.assertIn("image CUDA architecture provenance must be SM80/8.0", preflight)
         self.assertIn("from vllm.models.deepseek_v4 import", preflight)
+        self.assertIn("from vllm.v1.worker.gpu_worker import Worker", preflight)
         for script in ("build_image.sh", "load_image.sh", "run_package_tests.sh"):
             self.assertIn(
                 "verify_runtime_source.py", (R2 / f"scripts/{script}").read_text()
@@ -235,9 +236,9 @@ class PackageContractTest(unittest.TestCase):
             "INCREMENTAL_BASE_IMAGE_ID": (
                 "sha256:5d420df326cf1455ee84ebe988a1c056823f9f800c61bb21eec04d3c4510bfd8"
             ),
-            "INCREMENTAL_RESULT_IMAGE": "dsv4-a100:20260830-r2.1-sm80",
+            "INCREMENTAL_RESULT_IMAGE": "dsv4-a100:20260830-r2.2-sm80",
             "INCREMENTAL_RESULT_SOURCE_COMMIT": (
-                "bc51bfa7903de8cb94144fbab0aac1e6b333e6b6"
+                "6683c3dc41936a0a5b15d73db056388abddbf8a8"
             ),
         }
         self.assertEqual(
@@ -253,6 +254,7 @@ class PackageContractTest(unittest.TestCase):
         self.assertNotIn("pip install", dockerfile)
         packager = (R2 / "scripts/package_incremental_release.sh").read_text()
         self.assertNotIn("image save", packager)
+        self.assertIn("R2-to-R2.2 installed vLLM diff", packager)
 
     def test_required_entrypoints_exist(self):
         for name in (

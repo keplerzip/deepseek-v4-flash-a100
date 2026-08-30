@@ -84,7 +84,7 @@ warn() { printf '[dsv4-r2:%s] WARNING: %s\n' "$runtime_suffix" "$*" >&2; }
 die() { printf '[dsv4-r2:%s] ERROR: %s\n' "$runtime_suffix" "$*" >&2; exit 1; }
 
 assert_release_contract() {
-  [[ "$R2_RELEASE" == 2026.08.30-r2.1 ]] || die 'release identity is corrupt'
+  [[ "$R2_RELEASE" == 2026.08.30-r2.2 ]] || die 'release identity is corrupt'
   [[ "$MAX_MODEL_LEN" == 1048576 && "$SHORT_MODEL_MAX_LEN" == 262144 ]] || die \
     'context contract is corrupt'
   [[ "$MAX_NUM_SEQS" == 16 && "$MAX_NUM_BATCHED_TOKENS" == 4096 ]] || die \

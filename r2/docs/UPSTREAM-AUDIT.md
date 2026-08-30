@@ -1,8 +1,8 @@
-# 2026-08-26 上游更新审计与 R2.1 兼容修复
+# 2026-08-26 上游更新审计与 R2.2 兼容修复
 
 审计基于 `vllm-project/vllm` 当日 main，针对 DeepSeek-V4-Flash-0731、A100 SM80、
 TP8、1M、prefix cache 和 DSpark。R2 source 锁定为
-`bc51bfa7903de8cb94144fbab0aac1e6b333e6b6`。
+`6683c3dc41936a0a5b15d73db056388abddbf8a8`。
 
 ## 已纳入
 
@@ -30,6 +30,12 @@ R2.1 另修复 #51538 在本分支的回移依赖错位：本 A100 分支明确�
 `DeepseekV4FlashMLABackend`。原 R2 镜像错误引用仅在 #51718 之后才存在的
 `DeepseekV4SparseMLABackend`，导致 target 和 DSpark 都在模型注册时退出。修复只对齐
 Python 后端接口，不改变 A100 SM80 实际选择的 FlashMLA kernel、权重或 KV 格式。
+
+R2.2 继续修复同一 #51538 回移带入的第二处依赖错位：上游提交上下文中的
+`gpu/model_runner.py` 导入了更晚版本 `worker/utils.py` 才具备的
+`get_uniform_decode_token_count`，但该名称在 runner 内没有任何调用。R2.2 删除这个
+悬空导入，不补入无用的新逻辑；同时将 Worker 启动链的本地符号契约与目标 GPU 上的
+真实 Worker import 加入门禁。
 
 ## 配置接纳、未直接 cherry-pick
 

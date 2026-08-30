@@ -8,21 +8,29 @@ source "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/lib.sh"
 # shellcheck disable=SC1091
 source "$R2_DIR/incremental/base.env"
 init_docker
-for command in git gzip mktemp sha256sum tar; do require_command "$command"; done
+for command in awk git gzip mktemp sha256sum sort tar; do
+  require_command "$command"
+done
+
+changed_vllm_files=(
+  vllm/_version.py
+  vllm/models/deepseek_v4/nvidia/flashinfer_sparse.py
+  vllm/v1/worker/gpu/model_runner.py
+)
 
 [[ "$INCREMENTAL_RESULT_IMAGE" == "$R2_IMAGE" ]] || die \
-  'incremental result tag must equal the R2.1 release image tag'
+  'incremental result tag must equal the R2.2 release image tag'
 [[ "$(docker_cmd image inspect --format '{{.Id}}' "$INCREMENTAL_BASE_IMAGE")" == \
     "$INCREMENTAL_BASE_IMAGE_ID" ]] || die 'exact R2 base image is unavailable'
 [[ "$(docker_cmd image inspect --format '{{.Id}}' "$R2_IMAGE")" == \
-    'sha256:9c430349f4b305649eaa07cfef9b70f85133d0af81f6f59ee6a4b0a1593591a8' ]] || die \
-  'exact full R2.1 image is unavailable for overlay extraction'
+    'sha256:333503e39c788fb72cda4bbffc71deb3ab5338c08751c4c220a3be6bd24bda0a' ]] || die \
+  'exact full R2.2 image is unavailable for overlay extraction'
 git -C "$ROOT_DIR" diff --quiet
 git -C "$ROOT_DIR" diff --cached --quiet
 [[ -z "$(git -C "$ROOT_DIR" ls-files --others --exclude-standard)" ]] || die \
   'offline delivery repository has untracked files'
 
-project_name=${INCREMENTAL_PROJECT_NAME:-deepseek-v4-flash-a100-r2.1-incremental-from-r2-20260830}
+project_name=${INCREMENTAL_PROJECT_NAME:-deepseek-v4-flash-a100-r2.2-incremental-from-r2-20260830}
 output=${1:-$(dirname -- "$ROOT_DIR")/$project_name.tar.gz}
 output_dir=$(cd -- "$(dirname -- "$output")" && pwd)
 output="$output_dir/$(basename -- "$output")"
@@ -37,6 +45,34 @@ cleanup() {
   rm -f -- "$temporary"
 }
 trap cleanup EXIT
+
+base_manifest="$staging/base-vllm.sha256"
+result_manifest="$staging/result-vllm.sha256"
+docker_cmd run --rm --network none --entrypoint sh \
+  "$INCREMENTAL_BASE_IMAGE" -c \
+  'cd /usr/local/lib/python3.12/dist-packages && find vllm -type f -print0 | sort -z | xargs -0 sha256sum' \
+  >"$base_manifest"
+docker_cmd run --rm --network none --entrypoint sh "$R2_IMAGE" -c \
+  'cd /usr/local/lib/python3.12/dist-packages && find vllm -type f -print0 | sort -z | xargs -0 sha256sum' \
+  >"$result_manifest"
+observed_diff=$(awk '
+  NR == FNR { old[$2] = $1; next }
+  {
+    path = $2
+    if (!(path in old)) print "ADDED " path
+    else if (old[path] != $1) print "CHANGED " path
+    seen[path] = 1
+  }
+  END {
+    for (path in old) if (!(path in seen)) print "REMOVED " path
+  }
+' "$base_manifest" "$result_manifest" | sort)
+expected_diff=$(printf 'CHANGED %s\n' "${changed_vllm_files[@]}" | sort)
+[[ "$observed_diff" == "$expected_diff" ]] || {
+  printf 'expected installed vLLM diff:\n%s\nobserved diff:\n%s\n' \
+    "$expected_diff" "$observed_diff" >&2
+  die 'R2-to-R2.2 installed vLLM diff is not fully represented by the overlay'
+}
 
 head=$(git -C "$ROOT_DIR" rev-parse HEAD)
 epoch=$(git -C "$ROOT_DIR" log -1 --format=%ct HEAD)
@@ -54,22 +90,27 @@ git -C "$ROOT_DIR" archive --format=tar --prefix="$project_name/" "$head" \
 
 incremental_dir="$staging/$project_name/r2/incremental"
 overlay_dir="$incremental_dir/overlay"
-mkdir -p "$overlay_dir/vllm/models/deepseek_v4/nvidia"
+mkdir -p "$overlay_dir"
 container_id=$(docker_cmd container create "$R2_IMAGE")
-docker_cmd container cp \
-  "$container_id:/usr/local/lib/python3.12/dist-packages/vllm/_version.py" \
-  "$overlay_dir/vllm/_version.py"
-docker_cmd container cp \
-  "$container_id:/usr/local/lib/python3.12/dist-packages/vllm/models/deepseek_v4/nvidia/flashinfer_sparse.py" \
-  "$overlay_dir/vllm/models/deepseek_v4/nvidia/flashinfer_sparse.py"
+for relative_path in "${changed_vllm_files[@]}"; do
+  destination="$overlay_dir/$relative_path"
+  mkdir -p "$(dirname -- "$destination")"
+  docker_cmd container cp \
+    "$container_id:/usr/local/lib/python3.12/dist-packages/$relative_path" \
+    "$destination"
+done
 docker_cmd container cp \
   "$container_id:/usr/local/lib/python3.12/dist-packages/$INCREMENTAL_NEW_DIST_INFO" \
   "$overlay_dir/"
 docker_cmd container rm "$container_id" >/dev/null
 container_id=
 
+printf '%s\n' "${changed_vllm_files[@]}" \
+  >"$incremental_dir/overlay-files.txt"
+
 (cd -- "$incremental_dir" && \
-  find Dockerfile overlay -type f -print0 | sort -z | xargs -0 sha256sum \
+  find Dockerfile overlay overlay-files.txt -type f -print0 | \
+    sort -z | xargs -0 sha256sum \
     >payload.sha256)
 payload_manifest_sha=$(sha256sum "$incremental_dir/payload.sha256" | awk '{print $1}')
 {

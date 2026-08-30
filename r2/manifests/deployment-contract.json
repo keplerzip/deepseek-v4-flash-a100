@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "release": "2026.08.30-r2.1",
+  "release": "2026.08.30-r2.2",
   "target_os": "Ubuntu 22.04",
   "privileged_interface": "sudo -n docker",
   "gpu": {"count": 8, "model": "A100-SXM4-80GB", "devices": "0,1,2,3,4,5,6,7"},

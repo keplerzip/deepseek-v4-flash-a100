@@ -1,6 +1,6 @@
-# DeepSeek V4 Flash A100 R2.1
+# DeepSeek V4 Flash A100 R2.2
 
-R2.1 是从 R1 独立升级的 8×A100 离线交付。它在构建机以 `MAX_JOBS=8`、
+R2.2 是从 R1 独立升级的 8×A100 离线交付。它在构建机以 `MAX_JOBS=8`、
 `NVCC_THREADS=1` 完整重编译 vLLM/CUDA SM80 产物，目标机只加载镜像。R1 目录、
 旧镜像和旧运行证据不会被覆盖。
 
@@ -44,7 +44,7 @@ R2.1 是从 R1 独立升级的 8×A100 离线交付。它在构建机以 `MAX_JO
 CSV、summary JSON 和自包含 HTML 位于：
 
 ```text
-/var/tmp/dsv4-a100-r2.1-20260830/<target|dspark-k7>/results/benchmark/
+/var/tmp/dsv4-a100-r2.2-20260830/<target|dspark-k7>/results/benchmark/
 ```
 
 每格结束后原子保存，重跑会跳过完成格；失败格需显式加 `--rerun-failed`。

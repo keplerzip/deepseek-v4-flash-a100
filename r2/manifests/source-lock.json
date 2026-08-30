@@ -3,7 +3,7 @@
   "source_repository": "https://github.com/haosdent/vllm.git",
   "upstream_repository": "https://github.com/vllm-project/vllm.git",
   "r1_base_commit": "12810046c799cbe874967e19b1c0fa134ab7b209",
-  "r2_source_commit": "bc51bfa7903de8cb94144fbab0aac1e6b333e6b6",
+  "r2_source_commit": "6683c3dc41936a0a5b15d73db056388abddbf8a8",
   "cuda_arch": "8.0",
   "selected_upstream_commits": [
     "e6707e5b65", "d3971f892f", "baafee96a3", "6e71ad63ca",
@@ -11,6 +11,6 @@
     "9b65ef21fb", "8ee8b0c889", "2d136ac44f", "700c52b684",
     "1caeaca28a"
   ],
-  "custom_commits": ["3b087212b8", "9667db18a6", "bc51bfa790"],
+  "custom_commits": ["3b087212b8", "9667db18a6", "bc51bfa790", "6683c3dc4"],
   "build": {"target": "vllm-openai", "max_jobs": 8, "nvcc_threads": 1, "compiled_on_build_host": true, "target_host_compilation": false}
 }

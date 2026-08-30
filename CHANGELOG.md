@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026.08.30-r2.2
+
+- 修复 #51538 回移后的第二处依赖错位：MRV2 `gpu/model_runner.py` 悬空导入当前
+  分支不存在且完全未使用的 `get_uniform_decode_token_count`，导致 8 个 Worker 在
+  初始化阶段全部退出；
+- 将 GPU Worker、kernel/sparse MLA warmup、MRV2 runner 与 DeepSeek V4 NVIDIA
+  backend/model 纳入已安装源码符号审计，并在目标机 GPU preflight 中真实导入
+  `vllm.v1.worker.gpu_worker.Worker`；
+- 增量更新仍严格以 `2026.08.26-r2` 镜像 ID
+  `sha256:5d420df326cf...` 为唯一基准，不依赖失败的 R2.1 派生镜像；
+- 逐文件比较基础镜像与完整 R2.2 镜像的 3,862 个已安装 vLLM 文件，增量层只覆盖
+  三个实际变化文件与新 dist-info，目标机继续断网、无依赖安装、无 CUDA 编译；
+- 使用新的镜像 tag、容器名和运行目录，保留 R2、R2.1 镜像与失败日志用于回溯。
+
 ## 2026.08.30-r2.1
 
 - 修复 DeepSeek V4 模型注册阶段的 sparse MLA 基类导入错误；该错误会同时阻断

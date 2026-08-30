@@ -10,6 +10,17 @@ import sysconfig
 from pathlib import Path
 
 
+STARTUP_MODULES = (
+    "vllm.v1.worker.gpu_worker",
+    "vllm.model_executor.warmup.kernel_warmup",
+    "vllm.model_executor.warmup.flashinfer_sparse_mla_warmup",
+    "vllm.v1.worker.gpu.warmup",
+    "vllm.v1.worker.gpu.model_runner",
+    "vllm.models.deepseek_v4.nvidia.flashinfer_sparse",
+    "vllm.models.deepseek_v4.nvidia.model",
+)
+
+
 def find_vllm_root() -> Path:
     candidates = {
         Path(path) / "vllm"
@@ -34,6 +45,106 @@ def definitions(path: Path) -> set[str]:
         for node in tree.body
         if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))
     }
+
+
+def module_path(root: Path, module: str) -> Path | None:
+    parts = module.split(".")
+    if not parts or parts[0] != "vllm":
+        return None
+    relative = Path(*parts[1:])
+    module_file = (root / relative).with_suffix(".py")
+    if module_file.is_file():
+        return module_file
+    package_file = root / relative / "__init__.py"
+    return package_file if package_file.is_file() else None
+
+
+def module_symbols(path: Path) -> tuple[set[str], bool]:
+    tree = ast.parse(path.read_text(), filename=str(path))
+    symbols: set[str] = set()
+    wildcard_import = False
+
+    def collect(nodes: list[ast.stmt]) -> None:
+        nonlocal wildcard_import
+        for node in nodes:
+            if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                symbols.add(node.name)
+            elif isinstance(node, (ast.Assign, ast.AnnAssign)):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                symbols.update(
+                    target.id for target in targets if isinstance(target, ast.Name)
+                )
+                if any(
+                    isinstance(target, ast.Name) and target.id == "__all__"
+                    for target in targets
+                ) and isinstance(node.value, (ast.List, ast.Tuple)):
+                    symbols.update(
+                        item.value
+                        for item in node.value.elts
+                        if isinstance(item, ast.Constant)
+                        and isinstance(item.value, str)
+                    )
+            elif isinstance(node, ast.Import):
+                symbols.update(
+                    alias.asname or alias.name.split(".")[0] for alias in node.names
+                )
+            elif isinstance(node, ast.ImportFrom):
+                wildcard_import |= any(alias.name == "*" for alias in node.names)
+                symbols.update(
+                    alias.asname or alias.name
+                    for alias in node.names
+                    if alias.name != "*"
+                )
+            elif isinstance(node, ast.If):
+                collect(node.body)
+                collect(node.orelse)
+            elif isinstance(node, ast.Try):
+                collect(node.body)
+                collect(node.orelse)
+                collect(node.finalbody)
+                for handler in node.handlers:
+                    collect(handler.body)
+
+    collect(tree.body)
+    return symbols, wildcard_import
+
+
+def local_import_contracts(path: Path) -> list[tuple[str, set[str]]]:
+    tree = ast.parse(path.read_text(), filename=str(path))
+    return [
+        (node.module, {alias.name for alias in node.names})
+        for node in tree.body
+        if isinstance(node, ast.ImportFrom)
+        and node.level == 0
+        and node.module is not None
+        and node.module.startswith("vllm.")
+        and all(alias.name != "*" for alias in node.names)
+    ]
+
+
+def audit_startup_imports(root: Path) -> dict[str, list[str]]:
+    missing: dict[str, list[str]] = {}
+    for source_module in STARTUP_MODULES:
+        source_path = module_path(root, source_module)
+        if source_path is None:
+            missing[source_module] = ["<module missing>"]
+            continue
+        for target_module, imported in local_import_contracts(source_path):
+            target_path = module_path(root, target_module)
+            if target_path is None:
+                continue
+            declared, has_wildcard_import = module_symbols(target_path)
+            if has_wildcard_import:
+                continue
+            undeclared = {
+                name
+                for name in imported - declared
+                if module_path(root, f"{target_module}.{name}") is None
+            }
+            if undeclared:
+                key = f"{source_module} -> {target_module}"
+                missing[key] = sorted(undeclared)
+    return missing
 
 
 def imported_sparse_mla_names(path: Path) -> set[str]:
@@ -70,6 +181,9 @@ def main() -> None:
     bases = backend_bases(flashinfer_sparse)
     if bases != {"DeepseekV4FlashMLABackend"}:
         raise RuntimeError(f"unexpected FlashInfer sparse backend base: {bases}")
+    startup_missing = audit_startup_imports(root)
+    if startup_missing:
+        raise RuntimeError(f"undefined GPU worker startup imports: {startup_missing}")
     print(
         json.dumps(
             {
@@ -77,6 +191,8 @@ def main() -> None:
                 "vllm_root": str(root),
                 "sparse_mla_imports": sorted(imported),
                 "backend_bases": sorted(bases),
+                "startup_import_contracts": "pass",
+                "startup_modules": list(STARTUP_MODULES),
             },
             sort_keys=True,
         )

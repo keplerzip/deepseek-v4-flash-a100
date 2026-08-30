@@ -5,7 +5,7 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 R2_DIR=$(cd -- "$SCRIPT_DIR/.." && pwd)
 export DSV4_SCHEME=dspark
 export PREFIX_CACHE_PROFILE=${PREFIX_CACHE_PROFILE:-zero}
-sweep_root=${RUNTIME_BASE:-/var/tmp/dsv4-a100-r2.1-20260830}/dspark-k-sweep
+sweep_root=${RUNTIME_BASE:-/var/tmp/dsv4-a100-r2.2-20260830}/dspark-k-sweep
 mkdir -p "$sweep_root"
 status_file="$sweep_root/status.tsv"
 printf 'k\tstartup\tbenchmark\tevidence\n' >"$status_file"
@@ -47,7 +47,7 @@ source "$SCRIPT_DIR/lib.sh"
 docker_cmd run --rm --network none \
   --user "$(id -u):$(id -g)" \
   --volume "$R2_DIR:/r2:ro" \
-  --volume "${RUNTIME_BASE:-/var/tmp/dsv4-a100-r2.1-20260830}:/runtime:rw" \
+  --volume "${RUNTIME_BASE:-/var/tmp/dsv4-a100-r2.2-20260830}:/runtime:rw" \
   --entrypoint python3 "$R2_IMAGE" \
   /r2/benchmarks/select_dspark_k.py \
   --k1 /runtime/dspark-k1/results/benchmark/dspark-k1-screen.csv \
