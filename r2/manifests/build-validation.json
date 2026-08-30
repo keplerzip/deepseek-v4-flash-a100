@@ -21,7 +21,7 @@
     "sm80_compile_and_link": "pass",
     "installed_dsv4_source_import_contract": "pass",
     "image_provenance_labels": "pass",
-    "package_contract_tests": 11,
+    "package_contract_tests": 12,
     "shell_syntax_scripts": 20,
     "benchmark_matrix_cells": 60,
     "docker_internal_network_integration": "pass",

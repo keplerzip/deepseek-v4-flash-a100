@@ -41,6 +41,16 @@ DSpark 验证项目。当前发行版为 **2026.08.30-r2.1**；R1 与更早现�
 ./report_two.sh                # 幂等启动 DSpark 报告服务器
 ```
 
+已经加载精确 `2026.08.26-r2` 镜像的目标机不必重新传输完整镜像，可使用 R2.1
+增量包执行：
+
+```bash
+./update-from-r2.sh one        # 断网构建小型修复层并启动 target
+./update-from-r2.sh two        # 断网构建小型修复层并启动 DSpark k=7
+```
+
+增量安装器要求旧镜像 ID 精确匹配，不下载依赖、不运行 pip，也不重新编译 CUDA。
+
 模型仍使用目标机原目录，不进入交付包：
 
 ```text
@@ -61,9 +71,10 @@ GitHub 是 source-only 视图，包含脚本、测试、文档、manifest 和审
 - 自动生成的完整 vLLM 源码快照；
 - 目标机日志、缓存、性能 CSV、API key 或其他秘密。
 
-所以仅克隆 GitHub 不能在断网目标机直接部署。构建侧执行
+所以仅克隆 GitHub 不能在全新断网目标机直接部署。构建侧执行
 `r2/scripts/package_offline_release.sh` 后生成的单一压缩包才包含预编译运行环境和
-精确源码快照。
+精确源码快照；已有精确 R2 基础镜像时，也可执行
+`r2/scripts/package_incremental_release.sh` 生成小型增量交付。
 
 ## 版本与证据
 

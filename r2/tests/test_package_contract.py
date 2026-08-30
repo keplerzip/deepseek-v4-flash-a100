@@ -228,6 +228,32 @@ class PackageContractTest(unittest.TestCase):
         self.assertIn('if [[ "$SCHEME_ID" == dspark ]]', start)
         self.assertIn("target safety invariant", start)
 
+    def test_incremental_update_is_pinned_and_offline(self):
+        base_path = R2 / "incremental/base.env"
+        expected = {
+            "INCREMENTAL_BASE_IMAGE": "dsv4-a100:20260826-r2-sm80",
+            "INCREMENTAL_BASE_IMAGE_ID": (
+                "sha256:5d420df326cf1455ee84ebe988a1c056823f9f800c61bb21eec04d3c4510bfd8"
+            ),
+            "INCREMENTAL_RESULT_IMAGE": "dsv4-a100:20260830-r2.1-sm80",
+            "INCREMENTAL_RESULT_SOURCE_COMMIT": (
+                "bc51bfa7903de8cb94144fbab0aac1e6b333e6b6"
+            ),
+        }
+        self.assertEqual(
+            {key: self.env_value(base_path, key) for key in expected}, expected
+        )
+        installer = (R2 / "incremental/install.sh").read_text()
+        self.assertIn("--network none", installer)
+        self.assertIn("--pull=false", installer)
+        self.assertIn('"$observed_base_id" == "$INCREMENTAL_BASE_IMAGE_ID"', installer)
+        self.assertNotIn("pip install", installer)
+        dockerfile = (R2 / "incremental/Dockerfile").read_text()
+        self.assertNotIn("apt-get", dockerfile)
+        self.assertNotIn("pip install", dockerfile)
+        packager = (R2 / "scripts/package_incremental_release.sh").read_text()
+        self.assertNotIn("image save", packager)
+
     def test_required_entrypoints_exist(self):
         for name in (
             "start_one.sh",
@@ -239,6 +265,7 @@ class PackageContractTest(unittest.TestCase):
             "report_one.sh",
             "report_two.sh",
             "run-tests.sh",
+            "update-from-r2.sh",
         ):
             self.assertTrue((ROOT / name).is_file(), name)
 

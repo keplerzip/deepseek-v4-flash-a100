@@ -17,6 +17,16 @@ sha256sum -c ../deepseek-v4-flash-a100-r2.1-offline-20260830.tar.gz.sha256
 ./start_one.sh
 ```
 
+若目标机已通过旧完整包加载镜像
+`dsv4-a100:20260826-r2-sm80@sha256:5d420df326cf...`，使用增量交付目录：
+
+```bash
+./update-from-r2.sh one
+```
+
+命令会精确校验旧镜像 ID，在 Docker `--network none` 下创建 R2.1 覆盖层并启动
+target。它不运行 pip、不编译 CUDA；旧镜像不匹配时会停止，不能降级为模糊修补。
+
 启动器按顺序校验镜像 tar、镜像 ID、source revision、GPU、Driver、模型结构、
 DSpark/MTP 权重、四名称限制和端口，然后启动 target。切换方案：
 
