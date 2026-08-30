@@ -29,6 +29,11 @@ if [[ ! -f "$archive" || ! -f "$checksum" || ! -f "$manifest" ]]; then
   if [[ -n "$observed" && "$revision" == "$R2_SOURCE_COMMIT" && \
         "$observed_jobs" == 8 && "$observed_nvcc_threads" == 1 && \
         "$observed_cuda_arch" == 8.0 ]]; then
+    docker_cmd run --rm --network none \
+      --volume "$R2_DIR:/audit:ro" \
+      --entrypoint python3 "$R2_IMAGE" \
+      /audit/scripts/verify_runtime_source.py >/dev/null || die \
+      'developer image failed the DeepSeek V4 source import contract'
     log 'offline tar is absent; reusing the exact locally prebuilt developer image'
     printf 'OFFLINE_IMAGE=PASS\nmode=preloaded-developer-image\nimage=%s\nid=%s\n' \
       "$R2_IMAGE" "$observed"
@@ -64,5 +69,10 @@ revision=$(docker_cmd image inspect --format \
   'loaded image NVCC_THREADS provenance mismatch'
 [[ "$(docker_cmd image inspect --format '{{index .Config.Labels "com.deepseek.cuda.arch"}}' "$R2_IMAGE")" == 8.0 ]] || die \
   'loaded image CUDA architecture provenance mismatch'
+docker_cmd run --rm --network none \
+  --volume "$R2_DIR:/audit:ro" \
+  --entrypoint python3 "$R2_IMAGE" \
+  /audit/scripts/verify_runtime_source.py >/dev/null || die \
+  'runtime image failed the DeepSeek V4 source import contract'
 printf 'OFFLINE_IMAGE=PASS\nimage=%s\nid=%s\nsha256=%s\n' \
   "$R2_IMAGE" "$observed" "$OFFLINE_R2_IMAGE_SHA256"

@@ -1,8 +1,8 @@
-# 2026-08-26 上游更新审计
+# 2026-08-26 上游更新审计与 R2.1 兼容修复
 
 审计基于 `vllm-project/vllm` 当日 main，针对 DeepSeek-V4-Flash-0731、A100 SM80、
 TP8、1M、prefix cache 和 DSpark。R2 source 锁定为
-`9667db18a628ba4505ad19529df84e09b250b1f3`。
+`bc51bfa7903de8cb94144fbab0aac1e6b333e6b6`。
 
 ## 已纳入
 
@@ -24,6 +24,12 @@ TP8、1M、prefix cache 和 DSpark。R2 source 锁定为
 
 此外保留 R1 tokenizer/parser/Claude 兼容补丁，增加四 alias 的 per-name context limit，
 并修正 Docker 构建上下文对上游 `.git` BuildKit bind mount 的排除冲突。
+
+R2.1 另修复 #51538 在本分支的回移依赖错位：本 A100 分支明确没有接纳 #51718
+的大规模 KV layout 重构，因此 `flashinfer_sparse.py` 必须继承该基线真实存在的
+`DeepseekV4FlashMLABackend`。原 R2 镜像错误引用仅在 #51718 之后才存在的
+`DeepseekV4SparseMLABackend`，导致 target 和 DSpark 都在模型注册时退出。修复只对齐
+Python 后端接口，不改变 A100 SM80 实际选择的 FlashMLA kernel、权重或 KV 格式。
 
 ## 配置接纳、未直接 cherry-pick
 

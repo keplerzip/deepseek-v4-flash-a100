@@ -63,6 +63,15 @@ for gpu_entry in "${gpu_inventory[@]}"; do
     "NVIDIA driver $gpu_driver is below $MIN_NVIDIA_DRIVER"
 done
 
+# Model registry inspection imports the NVIDIA and DSpark modules even for the
+# target scheme. Run that exact architecture import before accepting either
+# deployment path, so a broken image cannot fail later in the API container.
+docker_cmd run --rm --network none --gpus all \
+  --entrypoint python3 "$R2_IMAGE" -c '
+from vllm.models.deepseek_v4 import DeepseekV4ForCausalLM
+assert DeepseekV4ForCausalLM.__name__ == "DeepseekV4ForCausalLM"
+' || die 'DeepSeek V4 model architecture import failed inside the runtime image'
+
 docker_cmd run --rm --network none \
   --mount "type=bind,src=$MODEL_DIR,dst=$CONTAINER_MODEL_DIR,readonly" \
   --volume "$R2_DIR:/audit:ro" \

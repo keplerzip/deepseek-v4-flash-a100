@@ -38,7 +38,7 @@ cuda_arch=$(docker_cmd image inspect --format \
   '{{index .Config.Labels "com.deepseek.cuda.arch"}}' "$R2_IMAGE")
 [[ "$cuda_arch" == 8.0 ]] || die 'precompiled image CUDA architecture mismatch'
 
-project_name=${OFFLINE_PROJECT_NAME:-deepseek-v4-flash-a100-r2-offline-20260826}
+project_name=${OFFLINE_PROJECT_NAME:-deepseek-v4-flash-a100-r2.1-offline-20260830}
 output=${1:-$(dirname -- "$ROOT_DIR")/$project_name.tar.gz}
 output_dir=$(cd -- "$(dirname -- "$output")" && pwd)
 output="$output_dir/$(basename -- "$output")"

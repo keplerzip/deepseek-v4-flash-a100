@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026.08.30-r2.1
+
+- 修复 DeepSeek V4 模型注册阶段的 sparse MLA 基类导入错误；该错误会同时阻断
+  target 与 DSpark，`2026.08.26-r2` 完整离线包因此停止使用；
+- 将 NVIDIA FlashInfer sparse backend 重新对齐到本 A100 分支实际采用的
+  pre-KV-layout-refactor 基类，不引入未验证的 #51718 大规模 KV layout 重构；
+- 新增构建侧已安装源码 AST 契约、目标侧 GPU 模型架构真实导入门禁；
+- 将 TP8、C16、四个精确模型名称、256K/1M 限制和 Docker-only 网络边界迁入
+  最后加载的只读发行契约，复制旧 `secrets.env` 也无法覆盖；
+- 使用新镜像 tag、容器名和运行目录交付，保留旧镜像与失败证据用于回溯。
+
 ## 2026.08.26-r2
 
 - 方案收敛为 8×A100/TP8/C16：target 与 DSpark greedy k=7；

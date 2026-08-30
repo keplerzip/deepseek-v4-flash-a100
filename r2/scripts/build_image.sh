@@ -37,6 +37,10 @@ if docker_cmd image inspect "$R2_IMAGE" >/dev/null 2>&1; then
     '{{index .Config.Labels "com.deepseek.build.nvcc-threads"}}' "$R2_IMAGE")
   if [[ "$observed_jobs" == "$build_max_jobs" && \
         "$observed_nvcc_threads" == "$build_nvcc_threads" ]]; then
+    docker_cmd run --rm --network none \
+      --volume "$R2_DIR:/audit:ro" \
+      --entrypoint python3 "$R2_IMAGE" \
+      /audit/scripts/verify_runtime_source.py
     printf 'R2_IMAGE=PASS\nmode=reused\nimage=%s\n' "$R2_IMAGE"
     exit 0
   fi
@@ -80,6 +84,10 @@ revision=$(docker_cmd image inspect --format \
   'built image CUDA architecture label mismatch'
 docker_cmd run --rm --network none --entrypoint python3 "$R2_IMAGE" -c \
   'import vllm; from vllm.entrypoints.serve.utils.model_limits import get_served_model_max_len; assert get_served_model_max_len("x", 16) == 16; print(vllm.__version__)'
+docker_cmd run --rm --network none \
+  --volume "$R2_DIR:/audit:ro" \
+  --entrypoint python3 "$R2_IMAGE" \
+  /audit/scripts/verify_runtime_source.py
 ensure_runtime_dirs
 docker_cmd image inspect "$R2_IMAGE" >"$RESULT_DIR/image-inspect.json"
 printf 'R2_IMAGE=PASS\nmode=built\nimage=%s\nid=%s\n' "$R2_IMAGE" \

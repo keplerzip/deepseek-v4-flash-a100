@@ -1,4 +1,4 @@
-# R2 部署说明
+# R2.1 部署说明
 
 ## 前置条件
 
@@ -13,7 +13,7 @@
 解压完整离线包后：
 
 ```bash
-sha256sum -c ../deepseek-v4-flash-a100-r2-offline-20260826.tar.gz.sha256
+sha256sum -c ../deepseek-v4-flash-a100-r2.1-offline-20260830.tar.gz.sha256
 ./start_one.sh
 ```
 
@@ -36,7 +36,8 @@ cp r2/config/secrets.env.example r2/config/secrets.env
 ```
 
 可配置模型路径、API key、运行根目录、显存利用率和 cache profile。GPU、TP、C16、
-物理 1M 上限、网络发布边界和方案 speculative method 由发行版锁定。
+物理 1M 上限、四个精确 alias、网络发布边界和方案 speculative method 由
+`config/release.env` 最后加载并设为只读，旧 `secrets.env` 不能覆盖。
 
 临时切换 cache profile：
 

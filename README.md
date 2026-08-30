@@ -1,7 +1,7 @@
 # deepseek-v4-flash-a100
 
 DeepSeek-V4-Flash-0731 在 8×A100-SXM4-80GB 上的离线 vLLM 部署、缓存与
-DSpark 验证项目。当前 `main` 对应 **2026.08.26-r2**；R1 与更早现场版本仍完整
+DSpark 验证项目。当前发行版为 **2026.08.30-r2.1**；R1 与更早现场版本仍完整
 保留在仓库历史和 `r1/` 中，但根目录入口已经切换到 R2。
 
 ## R2 结论先行
@@ -69,8 +69,8 @@ GitHub 是 source-only 视图，包含脚本、测试、文档、manifest 和审
 
 | 项目 | 固定值 |
 |---|---|
-| Release | `2026.08.26-r2` |
-| vLLM source | `9667db18a628ba4505ad19529df84e09b250b1f3` |
+| Release | `2026.08.30-r2.1` |
+| vLLM source | `bc51bfa7903de8cb94144fbab0aac1e6b333e6b6` |
 | CUDA 架构 | SM80 / A100 |
 | GPU / TP | 8 / 8 |
 | Engine context | 1,048,576 |

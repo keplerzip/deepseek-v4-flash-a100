@@ -17,6 +17,7 @@ docker_cmd run --rm --network none \
   /bundle/r2/benchmarks/compare_schemes.py \
   /bundle/r2/benchmarks/stability_soak.py \
   /bundle/r2/reports/generate_report.py \
+  /bundle/r2/scripts/verify_runtime_source.py \
   /bundle/r2/scripts/verify_model.py \
   /bundle/r2/tests/api_contract.py \
   /bundle/r2/tests/test_package_contract.py
@@ -28,9 +29,14 @@ docker_cmd run --rm --network none \
   r2/tests/test_package_contract.py
 
 docker_cmd run --rm --network none \
+  --volume "$R2_DIR:/audit:ro" \
+  --entrypoint python3 "$R2_IMAGE" \
+  /audit/scripts/verify_runtime_source.py
+
+docker_cmd run --rm --network none \
   --volume "$R2_DIR:/r2:ro" \
   --entrypoint python3 "$R2_IMAGE" \
   /r2/benchmarks/long_context_matrix.py \
   --scheme target --cache-profile zero --output /tmp/matrix-plan.csv --plan-only
-printf 'PACKAGE_TESTS=PASS\nshell_files=%s\npython_contract=pass\nmatrix_cells=60\n' \
+printf 'PACKAGE_TESTS=PASS\nshell_files=%s\npython_contract=pass\nruntime_source_contract=pass\nmatrix_cells=60\n' \
   "${#shell_files[@]}"

@@ -25,6 +25,11 @@ fi
 # GPU count, TP layout and speculative method remain release-owned.
 # shellcheck disable=SC1090
 source "$R2_DIR/config/schemes/$SELECTED_SCHEME.env"
+# Release-owned values are deliberately loaded last. A copied secrets.env may
+# configure local paths and credentials, but cannot mutate TP8/C16, aliases,
+# image provenance, context limits or the Docker-only publication boundary.
+# shellcheck disable=SC1091
+source "$R2_DIR/config/release.env"
 DSV4_SCHEME=$SCHEME_ID
 set +a
 
@@ -45,13 +50,22 @@ if [[ "$SCHEME_ID" == dspark ]]; then
   esac
 fi
 
-SERVED_MODEL_NAMES=(
+declare -ar SERVED_MODEL_NAMES=(
   'deepseek-v4-flash'
   'deepseek-v4-flash[1M]'
   'deepseek-v4-flash-claude'
   'deepseek-v4-flash-claude[1M]'
 )
-OWNER_LABEL=deepseek-v4-flash-a100-r2
+readonly OWNER_LABEL=deepseek-v4-flash-a100-r2
+readonly R2_IMAGE R2_SOURCE_COMMIT R2_RELEASE MIN_NVIDIA_DRIVER
+readonly CONTAINER_MODEL_DIR MAX_MODEL_LEN SHORT_MODEL_MAX_LEN MAX_NUM_SEQS
+readonly MAX_NUM_BATCHED_TOKENS KV_CACHE_DTYPE BLOCK_SIZE SERVED_MODEL_MAX_LENS
+readonly HOST PORT HOST_PUBLISH_ADDRESS API_PROBE_HOST NETWORK_MODE
+readonly GPU_DEVICES GPU_COUNT TENSOR_PARALLEL_SIZE
+readonly HF_HUB_OFFLINE TRANSFORMERS_OFFLINE HF_DATASETS_OFFLINE
+readonly VLLM_NO_USAGE_STATS DO_NOT_TRACK TOKENIZERS_PARALLELISM
+readonly SCHEME_ID SCHEME_LABEL CONTAINER_NAME SPECULATIVE_METHOD DSPARK_K
+readonly REPORT_PORT_DEFAULT REPORT_CONTAINER_NAME DSV4_SCHEME
 runtime_suffix=$SCHEME_ID
 if [[ "$SCHEME_ID" == dspark ]]; then
   runtime_suffix="$SCHEME_ID-k$DSPARK_K"
@@ -68,6 +82,27 @@ DSV4_DOCKER_CMD=()
 log() { printf '[dsv4-r2:%s] %s\n' "$runtime_suffix" "$*"; }
 warn() { printf '[dsv4-r2:%s] WARNING: %s\n' "$runtime_suffix" "$*" >&2; }
 die() { printf '[dsv4-r2:%s] ERROR: %s\n' "$runtime_suffix" "$*" >&2; exit 1; }
+
+assert_release_contract() {
+  [[ "$R2_RELEASE" == 2026.08.30-r2.1 ]] || die 'release identity is corrupt'
+  [[ "$MAX_MODEL_LEN" == 1048576 && "$SHORT_MODEL_MAX_LEN" == 262144 ]] || die \
+    'context contract is corrupt'
+  [[ "$MAX_NUM_SEQS" == 16 && "$MAX_NUM_BATCHED_TOKENS" == 4096 ]] || die \
+    'scheduler contract is corrupt'
+  [[ "$GPU_DEVICES" == 0,1,2,3,4,5,6,7 && "$GPU_COUNT" == 8 && \
+        "$TENSOR_PARALLEL_SIZE" == 8 ]] || die 'TP8 GPU contract is corrupt'
+  [[ "$HOST" == 0.0.0.0 && "$PORT" == 8005 && \
+        "$HOST_PUBLISH_ADDRESS" == 127.0.0.1 && "$NETWORK_MODE" == bridge ]] || die \
+    'network boundary contract is corrupt'
+  [[ "${#SERVED_MODEL_NAMES[@]}" == 4 && \
+        "${SERVED_MODEL_NAMES[0]}" == deepseek-v4-flash && \
+        "${SERVED_MODEL_NAMES[1]}" == 'deepseek-v4-flash[1M]' && \
+        "${SERVED_MODEL_NAMES[2]}" == deepseek-v4-flash-claude && \
+        "${SERVED_MODEL_NAMES[3]}" == 'deepseek-v4-flash-claude[1M]' ]] || die \
+    'served-model alias contract is corrupt'
+}
+
+assert_release_contract
 
 ensure_runtime_dirs() {
   mkdir -p "$LOG_DIR" "$RUN_DIR" "$CACHE_DIR" "$TMP_DIR" \

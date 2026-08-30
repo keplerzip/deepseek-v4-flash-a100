@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -20,16 +21,50 @@ class PackageContractTest(unittest.TestCase):
         spec.loader.exec_module(module)
         return module
 
+    @staticmethod
+    def env_value(path: Path, key: str) -> str:
+        prefix = f"{key}="
+        values = [
+            line.removeprefix(prefix)
+            for line in path.read_text().splitlines()
+            if line.startswith(prefix)
+        ]
+        if len(values) != 1:
+            raise AssertionError(f"expected one exact {key}= assignment in {path}")
+        return values[0]
+
     def test_locked_runtime_contract(self):
-        common = (R2 / "config/common.env").read_text()
-        self.assertIn("MAX_MODEL_LEN=1048576", common)
-        self.assertIn("SHORT_MODEL_MAX_LEN=262144", common)
-        self.assertIn("MAX_NUM_SEQS=16", common)
-        self.assertIn("GPU_DEVICES=0,1,2,3,4,5,6,7", common)
-        self.assertIn("TENSOR_PARALLEL_SIZE=8", common)
-        self.assertIn("HOST_PUBLISH_ADDRESS=127.0.0.1", common)
-        self.assertIn("NETWORK_MODE=bridge", common)
-        self.assertIn("PREFIX_CACHE_PROFILE=${PREFIX_CACHE_PROFILE:-zero}", common)
+        common_path = R2 / "config/common.env"
+        release_path = R2 / "config/release.env"
+        expected_release = {
+            "R2_RELEASE": "2026.08.30-r2.1",
+            "MAX_MODEL_LEN": "1048576",
+            "SHORT_MODEL_MAX_LEN": "262144",
+            "MAX_NUM_SEQS": "16",
+            "MAX_NUM_BATCHED_TOKENS": "4096",
+            "GPU_DEVICES": "0,1,2,3,4,5,6,7",
+            "GPU_COUNT": "8",
+            "TENSOR_PARALLEL_SIZE": "8",
+            "HOST": "0.0.0.0",
+            "PORT": "8005",
+            "HOST_PUBLISH_ADDRESS": "127.0.0.1",
+            "NETWORK_MODE": "bridge",
+        }
+        self.assertEqual(
+            {key: self.env_value(release_path, key) for key in expected_release},
+            expected_release,
+        )
+        self.assertEqual(
+            self.env_value(common_path, "PREFIX_CACHE_PROFILE"),
+            "${PREFIX_CACHE_PROFILE:-zero}",
+        )
+        lib = (R2 / "scripts/lib.sh").read_text()
+        self.assertLess(
+            lib.index('source "$R2_DIR/config/secrets.env"'),
+            lib.index('source "$R2_DIR/config/release.env"'),
+        )
+        self.assertIn("readonly MAX_NUM_BATCHED_TOKENS KV_CACHE_DTYPE BLOCK_SIZE", lib)
+        self.assertIn("assert_release_contract", lib)
         source_lock = json.loads((R2 / "manifests/source-lock.json").read_text())
         self.assertEqual(source_lock["build"]["max_jobs"], 8)
         self.assertEqual(source_lock["build"]["nvcc_threads"], 1)
@@ -61,6 +96,11 @@ class PackageContractTest(unittest.TestCase):
         self.assertIn("loaded image CUDA architecture provenance mismatch", load_script)
         preflight = (R2 / "scripts/preflight.sh").read_text()
         self.assertIn("image CUDA architecture provenance must be SM80/8.0", preflight)
+        self.assertIn("from vllm.models.deepseek_v4 import", preflight)
+        for script in ("build_image.sh", "load_image.sh", "run_package_tests.sh"):
+            self.assertIn(
+                "verify_runtime_source.py", (R2 / f"scripts/{script}").read_text()
+            )
 
     def test_four_exact_aliases_and_limits(self):
         lib = (R2 / "scripts/lib.sh").read_text()
@@ -70,11 +110,15 @@ class PackageContractTest(unittest.TestCase):
             "deepseek-v4-flash-claude",
             "deepseek-v4-flash-claude[1M]",
         )
-        for model in expected:
-            self.assertIn(f"'{model}'", lib)
+        array_match = re.search(
+            r"declare -ar SERVED_MODEL_NAMES=\((?P<body>.*?)\n\)", lib, re.DOTALL
+        )
+        self.assertIsNotNone(array_match)
+        aliases = tuple(re.findall(r"^\s*'([^']+)'\s*$", array_match["body"], re.MULTILINE))
+        self.assertEqual(aliases, expected)
         mapping_line = next(
             line
-            for line in (R2 / "config/common.env").read_text().splitlines()
+            for line in (R2 / "config/release.env").read_text().splitlines()
             if line.startswith("SERVED_MODEL_MAX_LENS=")
         )
         mapping = json.loads(mapping_line.split("=", 1)[1].strip("'"))
@@ -89,11 +133,11 @@ class PackageContractTest(unittest.TestCase):
         )
 
     def test_two_schemes_are_tp8_c16_and_dspark_defaults_k7(self):
-        common = (R2 / "config/common.env").read_text()
+        release_path = R2 / "config/release.env"
         target = (R2 / "config/schemes/target.env").read_text()
         dspark = (R2 / "config/schemes/dspark.env").read_text()
-        self.assertIn("TENSOR_PARALLEL_SIZE=8", common)
-        self.assertIn("MAX_NUM_SEQS=16", common)
+        self.assertEqual(self.env_value(release_path, "TENSOR_PARALLEL_SIZE"), "8")
+        self.assertEqual(self.env_value(release_path, "MAX_NUM_SEQS"), "16")
         self.assertIn("SPECULATIVE_METHOD=none", target)
         self.assertIn("DSPARK_K=${DSV4_DSPARK_K:-7}", dspark)
         start = (R2 / "scripts/start.sh").read_text()

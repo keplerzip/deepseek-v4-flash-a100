@@ -77,5 +77,5 @@ soak 使用 600K 输入、1K 输出、90% 命中、C16，持续记录每 wave、
 
 ## 结果位置
 
-所有目标侧证据在 `/var/tmp/dsv4-a100-r2-20260826`，按 target 与 dspark-k 分开。
+所有目标侧证据在 `/var/tmp/dsv4-a100-r2.1-20260830`，按 target 与 dspark-k 分开。
 CSV 的 pending/null 不会在 HTML 中显示为 0。
